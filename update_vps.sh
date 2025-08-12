@@ -350,6 +350,9 @@ check_ports() {
     
     log "Verificación de puertos completada"
 }
+
+# Función para verificar integridad de datos
+verify_data_integrity() {
     print_step "Verificando integridad de datos de usuarios..."
     
     if [[ -d "uploads" ]]; then
