@@ -177,7 +177,22 @@ APK-Store/
 
 ## 🔧 Gestión del Servidor
 
-### Comandos Básicos
+### 🚀 **Comandos con Scripts Automáticos (Recomendado)**
+```bash
+# Actualizar aplicación (mantiene datos)
+./update_vps.sh
+
+# Actualización rápida
+./quick_update.sh
+
+# Configuración inicial de scripts
+./setup_update_scripts.sh
+
+# En Windows
+PowerShell -ExecutionPolicy Bypass -File .\update_windows.ps1
+```
+
+### 📋 **Comandos Básicos Manuales**
 ```bash
 # Ver logs del servidor
 screen -r downloader
@@ -191,9 +206,12 @@ screen -dmS downloader python3 main.py 5001
 
 # Ver aplicaciones subidas
 ls DownloaderAPP/uploads/*.apk
+
+# Ver logs de actualización
+tail -f update.log
 ```
 
-### Cambiar Puerto
+### 🔄 **Cambiar Puerto**
 ```bash
 # Detener servidor actual
 screen -S downloader -X quit
@@ -201,6 +219,23 @@ screen -S downloader -X quit
 # Iniciar en nuevo puerto (ejemplo: 8080)
 cd DownloaderAPP
 screen -dmS downloader python3 main.py 8080
+```
+
+### 🛠️ **Mantenimiento con Scripts**
+```bash
+# Hacer backup manual
+cp -r uploads/ uploads_backup_$(date +%Y%m%d_%H%M%S)/
+
+# Verificar integridad de datos
+ls -la uploads/
+cat uploads/apps_metadata.json | jq .
+
+# Limpiar backups antiguos (mantener últimos 5)
+ls -t uploads_backup_* | tail -n +6 | xargs rm -rf
+
+# Verificar estado del servidor
+ps aux | grep python
+netstat -tulpn | grep :5001
 ```
 
 ## 🌐 URLs de Acceso
@@ -228,15 +263,57 @@ Después de la instalación, accede a:
 
 ## 🔄 Actualización sin Perder Datos
 
-### 🛡️ **Actualización Automática (Recomendado)**
+### � **Scripts de Actualización Automática (Recomendado)**
 
-Para actualizar a la última versión **SIN PERDER** las aplicaciones subidas por usuarios:
+Tenemos múltiples scripts para diferentes necesidades:
 
+#### **1. Script Completo y Robusto** (`update_vps.sh`)
 ```bash
-# Método 1: Script automático (más seguro)
 cd DownloaderAPP
 ./update_vps.sh
 ```
+- ✅ **Backup automático** con timestamp
+- ✅ **Detección inteligente** de procesos
+- ✅ **Verificación de conexión** a GitHub
+- ✅ **Restauración automática** en caso de error
+- ✅ **Logs detallados** del proceso
+- ✅ **Verificación post-actualización**
+
+#### **2. Script Rápido** (`quick_update.sh`)
+```bash
+cd DownloaderAPP
+./quick_update.sh
+```
+- ⚡ **Actualización express** para cambios menores
+- ⚡ **Proceso optimizado** sin verificaciones extensas
+- ⚡ **Ideal para actualizaciones frecuentes**
+
+#### **3. Script para Windows** (`update_windows.ps1`)
+```powershell
+cd DownloaderAPP
+PowerShell -ExecutionPolicy Bypass -File .\update_windows.ps1
+```
+- 🪟 **Compatible con Windows** y PowerShell
+- 🪟 **Detección de procesos Python** en Windows
+- 🪟 **Backup con nombres Windows-friendly**
+
+#### **4. Configuración Inicial** (`setup_update_scripts.sh`)
+```bash
+cd DownloaderAPP
+./setup_update_scripts.sh
+```
+- 🔧 **Configura permisos** de todos los scripts
+- 🔧 **Prepara el entorno** para actualizaciones
+- 🔧 **Solo necesitas ejecutarlo una vez**
+
+### 🛡️ **Características de Seguridad de los Scripts:**
+
+- 🔒 **Backup automático** antes de cualquier cambio
+- 🔒 **Verificación de conectividad** a GitHub
+- 🔒 **Rollback automático** si algo falla
+- 🔒 **Preservación garantizada** de datos de usuarios
+- 🔒 **Logs detallados** para debugging
+- 🔒 **Verificación de integridad** post-actualización
 
 ### 🔧 **Actualización Manual Paso a Paso**
 
@@ -272,8 +349,9 @@ screen -dmS downloader python3 main.py 5001
 
 - ✅ **Protección automática**: La carpeta `uploads/` está en `.gitignore`
 - ✅ **Git solo actualiza código**: Nunca toca archivos de datos de usuarios
-- ✅ **Backup automático**: El script crea respaldos antes de actualizar
+- ✅ **Backup automático**: Los scripts crean respaldos antes de actualizar
 - ✅ **Separación total**: Código y datos están completamente separados
+- ✅ **Rollback automático**: Si algo falla, se restaura el estado anterior
 
 ### 📁 **Datos que se Conservan Siempre:**
 
@@ -283,38 +361,35 @@ screen -dmS downloader python3 main.py 5001
 - 📋 **Metadata** (apps_metadata.json)
 - 📊 **Contadores de descarga**
 - ⭐ **Calificaciones** y estadísticas
+- 📝 **Logs del servidor**
+- ⚙️ **Configuraciones personalizadas**
 
 ### 🚀 **Configuración con Systemd (Más Profesional)**
 
 Para un manejo más profesional del servicio:
 
 ```bash
-# 1. Copiar archivo de servicio
-sudo cp downloader-app.service /etc/systemd/system/
+# 1. Configurar servicio automáticamente
+cd DownloaderAPP
+sudo ./setup_update_scripts.sh
 
-# 2. Editar rutas en el archivo
-sudo nano /etc/systemd/system/downloader-app.service
-# Cambiar: WorkingDirectory=/ruta/a/tu/DownloaderAPP
-# Cambiar: User=tu-usuario
-
-# 3. Habilitar y iniciar servicio
-sudo systemctl daemon-reload
-sudo systemctl enable downloader-app
-sudo systemctl start downloader-app
-
-# 4. Para actualizar en el futuro:
+# 2. Usar systemd para actualizaciones
 sudo systemctl stop downloader-app
 git pull origin main
 sudo systemctl start downloader-app
+
+# 3. O usar el script con systemd
+./update_vps.sh --systemd
 ```
 
 ### 📊 **Verificar Actualización Exitosa**
 
-Después de actualizar, verifica que todo funciona:
+Los scripts automáticamente verifican, pero puedes hacerlo manualmente:
 
 ```bash
 # 1. Verificar que el servidor está corriendo
 ps aux | grep python
+systemctl status downloader-app  # Si usas systemd
 
 # 2. Verificar que los datos siguen ahí
 ls -la uploads/
@@ -325,6 +400,47 @@ curl http://localhost:5001/api/apps
 
 # 4. Ver logs si hay problemas
 tail -f server.log
+tail -f update.log  # Logs de actualización
+```
+
+### 🆘 **Solución de Problemas en Actualización**
+
+#### **Si el script falla:**
+```bash
+# 1. Ver logs de la actualización
+cat update.log
+
+# 2. Restaurar backup automáticamente
+./restore_backup.sh  # (incluido en update_vps.sh)
+
+# 3. Verificar conectividad
+ping github.com
+git remote -v
+```
+
+#### **Si el servidor no arranca:**
+```bash
+# 1. Verificar dependencias
+pip3 install -r requirements.txt
+
+# 2. Verificar puertos
+netstat -tulpn | grep :5001
+
+# 3. Arrancar en modo debug
+python3 main.py 5001 --debug
+```
+
+#### **Si faltan datos:**
+```bash
+# 1. Verificar backups disponibles
+ls -la uploads_backup_*/
+
+# 2. Restaurar último backup
+cp -r uploads_backup_YYYYMMDD_HHMMSS/* uploads/
+
+# 3. Verificar integridad
+ls -la uploads/
+cat uploads/apps_metadata.json
 ```
 
 ##  Solución de Problemas
@@ -396,7 +512,37 @@ pip3 install Flask==2.3.3 gevent==23.7.0
 - 🔔 **Sistema de notificaciones** para desarrolladores
 - � **Soporte para apps premium** (pagadas)
 
-## 📄 Licencia
+## � Archivos del Proyecto
+
+### 📁 **Scripts de Automatización**
+- `update_vps.sh` - Script principal de actualización (robusto y seguro)
+- `quick_update.sh` - Actualización rápida para cambios menores
+- `update_windows.ps1` - Script de actualización para Windows/PowerShell
+- `setup_update_scripts.sh` - Configuración inicial de permisos y entorno
+
+### ⚙️ **Archivos de Configuración**
+- `downloader-app.service` - Configuración de servicio systemd
+- `requirements.txt` - Dependencias de Python
+- `installer.sh` - Instalador automático para VPS
+- `.gitignore` - Protección de datos de usuarios
+
+### 🔧 **Archivos Principales**
+- `main.py` - Servidor Flask principal
+- `debug_server.py` - Servidor en modo debug
+- `restart_server.bat` - Script de reinicio para Windows
+
+### 📝 **Documentación**
+- `README.md` - Esta documentación completa
+- `show_links.sh` - Script para mostrar enlaces útiles
+
+### 📂 **Estructura de Datos**
+- `uploads/` - Carpeta protegida con datos de usuarios
+  - `*.apk` - Archivos de aplicaciones
+  - `icons/` - Iconos de aplicaciones
+  - `screenshots/` - Capturas de pantalla
+  - `apps_metadata.json` - Metadatos y estadísticas
+
+## �📄 Licencia
 
 Este proyecto está bajo la Licencia MIT. Ver el archivo [LICENSE](LICENSE) para más detalles.
 
