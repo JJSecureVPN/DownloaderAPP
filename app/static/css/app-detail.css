@@ -142,7 +142,7 @@ body {
     background: white;
     backdrop-filter: blur(10px);
     border-radius: 20px;
-    overflow: hidden;
+    overflow: visible; /* Cambiar de hidden a visible para permitir elementos expandidos */
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     width: 100%;
     max-width: 100%;
@@ -314,11 +314,16 @@ body {
 }
 
 /* Screenshots */
+.screenshots-section {
+    overflow: visible; /* Permitir que las capturas expandidas se muestren fuera del contenedor */
+}
+
 .screenshots-container {
     display: flex;
     gap: 15px;
     overflow-x: auto;
-    padding-bottom: 10px;
+    overflow-y: visible; /* Permitir overflow vertical para el efecto hover */
+    padding: 20px 0; /* Agregar padding superior e inferior para evitar cortes */
     scroll-behavior: smooth;
 }
 
@@ -343,12 +348,16 @@ body {
     border-radius: 15px;
     overflow: hidden;
     cursor: pointer;
-    transition: transform 0.3s ease;
+    transition: all 0.3s ease;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    position: relative;
+    z-index: 1;
 }
 
 .screenshot-item:hover {
-    transform: scale(1.05);
+    transform: scale(1.08); /* Aumento ligeramente el scale para mejor visibilidad */
+    z-index: 10; /* Asegurar que la imagen hover aparezca encima */
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3); /* Sombra más prominente en hover */
 }
 
 .screenshot-item img {
@@ -570,11 +579,16 @@ body {
     
     .screenshots-container {
         gap: 10px;
+        padding: 15px 0; /* Mantener padding en responsive */
     }
     
     .screenshot-item {
         width: 150px;
         height: 270px;
+    }
+    
+    .screenshot-item:hover {
+        transform: scale(1.06); /* Ajustar el scale para pantallas más pequeñas */
     }
 }
 
@@ -627,11 +641,16 @@ body {
     
     .screenshots-container {
         gap: 8px;
+        padding: 10px 0; /* Mantener padding en pantallas muy pequeñas */
     }
     
     .screenshot-item {
         width: 120px;
         height: 210px;
+    }
+    
+    .screenshot-item:hover {
+        transform: scale(1.04); /* Scale más conservador para pantallas muy pequeñas */
     }
 }
 

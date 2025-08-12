@@ -11,6 +11,8 @@ body {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     min-height: 100vh;
     color: #333;
+    display: flex;
+    flex-direction: column;
 }
 
 .container {
@@ -72,6 +74,15 @@ body {
 /* Main Container */
 .main-container {
     padding: 40px 0;
+    flex: 1; /* Esto hace que el main-container ocupe todo el espacio disponible */
+    display: flex;
+    flex-direction: column;
+}
+
+.main-container .container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Stats Section */
@@ -158,6 +169,8 @@ body {
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: 25px;
     margin-bottom: 40px;
+    flex: 1; /* Esto hace que el grid ocupe el espacio restante */
+    align-content: start; /* Alinea las tarjetas al inicio del contenedor */
 }
 
 .app-card {
@@ -331,6 +344,11 @@ body {
     backdrop-filter: blur(10px);
     border-radius: 20px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    flex: 1; /* Ocupa el espacio restante disponible */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 300px; /* Altura mínima para evitar que se vea muy pequeño */
 }
 
 .no-apps-icon {
@@ -358,7 +376,7 @@ body {
     border-top: 1px solid rgba(255, 255, 255, 0.2);
     padding: 30px 0;
     text-align: center;
-    margin-top: 60px;
+    margin-top: auto; /* Esto empuja el footer al final */
 }
 
 .footer p {
