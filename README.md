@@ -37,19 +37,26 @@ Cuando subes un archivo que ya existe, obtienes 3 opciones:
 
 ### Método 1: Una línea (Recomendado)
 ```bash
-sudo bash <(curl -s https://raw.githubusercontent.com/JJSecureVPN/DownloaderAPP/main/install.sh)
+sudo bash <(curl -s https://raw.githubusercontent.com/JJSecureVPN/DownloaderAPP/main/installer.sh)
 ```
 
-### Método 2: Descarga y ejecuta
+### Método 2: Descarga directa
 ```bash
-wget https://raw.githubusercontent.com/JJSecureVPN/DownloaderAPP/main/install.sh
-sudo bash install.sh
+wget https://raw.githubusercontent.com/JJSecureVPN/DownloaderAPP/main/installer.sh
+sudo bash installer.sh
 ```
 
 ### Método 3: Con curl
 ```bash
-curl -O https://raw.githubusercontent.com/JJSecureVPN/DownloaderAPP/main/install.sh
-sudo bash install.sh
+curl -O https://raw.githubusercontent.com/JJSecureVPN/DownloaderAPP/main/installer.sh
+sudo bash installer.sh
+```
+
+### Método 4: Clonación completa
+```bash
+git clone https://github.com/JJSecureVPN/DownloaderAPP.git
+cd DownloaderAPP
+sudo bash installer.sh
 ```
 
 ## 📋 Requisitos del Sistema
@@ -149,7 +156,7 @@ Para actualizar a la última versión:
 screen -S downloader -X quit
 
 # Ejecutar instalador nuevamente
-sudo bash <(curl -s https://raw.githubusercontent.com/JJSecureVPN/DownloaderAPP/main/install.sh)
+sudo bash <(curl -s https://raw.githubusercontent.com/JJSecureVPN/DownloaderAPP/main/installer.sh)
 ```
 
 ## 🐛 Solución de Problemas
