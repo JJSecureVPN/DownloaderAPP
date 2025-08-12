@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="pageTitle">Detalle de la App - APK Store</title>
+    <link rel="stylesheet" href="../static/css/app-detail.css">
+</head>
+
+<body>
+    <div class="header">
+        <div class="container">
+            <div class="header-nav">
+                <a href="/store" class="back-btn">← Volver a la tienda</a>
+                <h1>📱 APK Store</h1>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="container">
+            <!-- Loading -->
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Cargando información de la aplicación...</p>
+            </div>
+
+            <!-- App not found -->
+            <div class="app-not-found" id="appNotFound" style="display: none;">
+                <div class="not-found-icon">❌</div>
+                <h2>Aplicación no encontrada</h2>
+                <p>La aplicación que buscas no existe o ha sido eliminada.</p>
+                <a href="/store" class="back-to-store-btn">← Volver a la tienda</a>
+            </div>
+
+            <!-- App Detail -->
+            <div class="app-detail" id="appDetail" style="display: none;">
+                <!-- App Header -->
+                <div class="app-header">
+                    <div class="app-icon-container">
+                        <div class="app-icon" id="appIcon">📱</div>
+                    </div>
+                    <div class="app-info">
+                        <h1 class="app-title" id="appTitle">Nombre de la App</h1>
+                        <p class="app-developer" id="appDeveloper">Desarrollador</p>
+                        <div class="app-category" id="appCategory">📦 Categoría</div>
+                        
+                        <div class="app-meta">
+                            <div class="meta-item">
+                                <span class="meta-icon">📥</span>
+                                <span id="appDownloads">0</span>
+                                <span class="meta-label">descargas</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-icon">⭐</span>
+                                <span id="appRating">N/A</span>
+                                <span class="meta-label">rating</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-icon">📦</span>
+                                <span id="appSize">N/A</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-icon">📅</span>
+                                <span id="appDate">N/A</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="app-actions">
+                        <button class="download-btn" id="downloadBtn" onclick="downloadApp()">
+                            📥 Descargar APK
+                        </button>
+                        <button class="share-btn" onclick="shareApp()">
+                            🔗 Compartir
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Screenshots (if available) -->
+                <div class="screenshots-section" id="screenshotsSection" style="display: none;">
+                    <h3>📸 Capturas de pantalla</h3>
+                    <div class="screenshots-container" id="screenshotsContainer">
+                        <!-- Screenshots will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div class="description-section">
+                    <h3>📝 Descripción</h3>
+                    <div class="description-content" id="appDescription">
+                        Cargando descripción...
+                    </div>
+                </div>
+
+                <!-- Technical Info -->
+                <div class="technical-section">
+                    <h3>🔧 Información técnica</h3>
+                    <div class="technical-grid">
+                        <div class="tech-item">
+                            <span class="tech-label">Tamaño del archivo:</span>
+                            <span class="tech-value" id="techSize">N/A</span>
+                        </div>
+                        <div class="tech-item">
+                            <span class="tech-label">Fecha de subida:</span>
+                            <span class="tech-value" id="techUploadDate">N/A</span>
+                        </div>
+                        <div class="tech-item">
+                            <span class="tech-label">Última actualización:</span>
+                            <span class="tech-value" id="techModified">N/A</span>
+                        </div>
+                        <div class="tech-item">
+                            <span class="tech-label">Versión:</span>
+                            <span class="tech-value" id="techVersion">N/A</span>
+                        </div>
+                        <div class="tech-item">
+                            <span class="tech-label">Nombre del archivo:</span>
+                            <span class="tech-value" id="techFilename">N/A</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions Section -->
+                <div class="actions-section">
+                    <h3>⚙️ Acciones</h3>
+                    <div class="actions-grid">
+                        <button class="action-btn download-action" onclick="downloadApp()">
+                            📥 Descargar APK
+                        </button>
+                        <button class="action-btn share-action" onclick="shareApp()">
+                            🔗 Compartir aplicación
+                        </button>
+                        <button class="action-btn copy-action" onclick="copyDownloadLink()">
+                            📋 Copiar enlace
+                        </button>
+                        <button class="action-btn report-action" onclick="reportApp()">
+                            🚩 Reportar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Download History -->
+                <div class="download-section">
+                    <h3>📊 Estadísticas de descarga</h3>
+                    <div class="download-stats">
+                        <div class="stat-box">
+                            <div class="stat-number" id="totalDownloadsDisplay">0</div>
+                            <div class="stat-label">Descargas totales</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number" id="downloadsTodayDisplay">0</div>
+                            <div class="stat-label">Hoy</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number" id="downloadsWeekDisplay">0</div>
+                            <div class="stat-label">Esta semana</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div class="container">
+            <p>🚀 Desarrollado con ❤️ por <strong>@JHServices</strong></p>
+        </div>
+    </div>
+
+    <script>
+        let currentApp = null;
+        let appFilename = null;
+
+        document.addEventListener('DOMContentLoaded', loadAppDetail);
+
+        async function loadAppDetail() {
+            // Obtener filename de la URL
+            const path = window.location.pathname;
+            appFilename = path.split('/').pop();
+            
+            if (!appFilename || appFilename === 'app') {
+                showAppNotFound();
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/apps/${appFilename}`);
+                
+                if (!response.ok) {
+                    throw new Error('App not found');
+                }
+                
+                currentApp = await response.json();
+                displayAppDetail(currentApp);
+                
+            } catch (error) {
+                console.error('Error loading app:', error);
+                showAppNotFound();
+            }
+        }
+
+        function displayAppDetail(app) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('appDetail').style.display = 'block';
+            
+            // Update page title
+            document.title = `${app.name || app.filename} - APK Store`;
+            
+            // App icon
+            const iconContainer = document.getElementById('appIcon');
+            if (app.icon && app.icon !== '') {
+                iconContainer.innerHTML = `<img src="/static/uploads/icons/${app.icon}" alt="${app.name || app.filename}" />`;
+            } else {
+                iconContainer.innerHTML = '📱';
+                iconContainer.className = 'app-icon emoji-icon';
+            }
+            
+            // Basic info
+            document.getElementById('appTitle').textContent = app.name || app.filename;
+            document.getElementById('appDeveloper').textContent = `por ${app.developer || 'Desarrollador Anónimo'}`;
+            document.getElementById('appCategory').textContent = `${getCategoryEmoji(app.category)} ${getCategoryName(app.category)}`;
+            
+            // Meta info
+            document.getElementById('appDownloads').textContent = app.downloads || 0;
+            document.getElementById('appRating').textContent = app.rating ? app.rating.toFixed(1) : 'N/A';
+            document.getElementById('appSize').textContent = formatFileSize(app.size);
+            document.getElementById('appDate').textContent = formatDate(app.upload_date || app.modified);
+            
+            // Description
+            const description = app.description || 'No hay descripción disponible para esta aplicación.';
+            document.getElementById('appDescription').innerHTML = `<p>${description.replace(/\n/g, '</p><p>')}</p>`;
+            
+            // Technical info
+            document.getElementById('techSize').textContent = formatFileSize(app.size);
+            document.getElementById('techUploadDate').textContent = formatDate(app.upload_date);
+            document.getElementById('techModified').textContent = formatDate(app.modified);
+            document.getElementById('techVersion').textContent = app.version || 'N/A';
+            document.getElementById('techFilename').textContent = app.filename;
+            
+            // Download stats
+            document.getElementById('totalDownloadsDisplay').textContent = app.downloads || 0;
+            document.getElementById('downloadsTodayDisplay').textContent = app.downloads_today || 0;
+            document.getElementById('downloadsWeekDisplay').textContent = app.downloads_week || 0;
+            
+            // Screenshots (if available)
+            if (app.screenshots && app.screenshots.length > 0) {
+                displayScreenshots(app.screenshots);
+            }
+        }
+
+        function displayScreenshots(screenshots) {
+            const section = document.getElementById('screenshotsSection');
+            const container = document.getElementById('screenshotsContainer');
+            
+            container.innerHTML = screenshots.map(screenshot => `
+                <div class="screenshot-item" onclick="openScreenshot('/static/uploads/screenshots/${screenshot}')">
+                    <img src="/static/uploads/screenshots/${screenshot}" alt="Screenshot" />
+                </div>
+            `).join('');
+            
+            section.style.display = 'block';
+        }
+
+        function openScreenshot(src) {
+            // Create modal for screenshot
+            const modal = document.createElement('div');
+            modal.className = 'screenshot-modal';
+            modal.innerHTML = `
+                <div class="screenshot-modal-content">
+                    <span class="screenshot-close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+                    <img src="${src}" alt="Screenshot" />
+                </div>
+            `;
+            
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.9);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+            `;
+            
+            document.body.appendChild(modal);
+            
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
+        }
+
+        function showAppNotFound() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('appNotFound').style.display = 'block';
+        }
+
+        async function downloadApp() {
+            if (!currentApp) return;
+            
+            try {
+                // Incrementar contador
+                await fetch(`/api/apps/${currentApp.filename}/download`, { method: 'POST' });
+                
+                // Descargar
+                window.open(`/download/${currentApp.filename}`, '_blank');
+                
+                // Actualizar contador en la interfaz
+                const currentDownloads = parseInt(document.getElementById('appDownloads').textContent) || 0;
+                document.getElementById('appDownloads').textContent = currentDownloads + 1;
+                document.getElementById('totalDownloadsDisplay').textContent = currentDownloads + 1;
+                
+                showNotification(`📥 Descargando ${currentApp.name || currentApp.filename}...`, 'success');
+                
+            } catch (error) {
+                showNotification('❌ Error al descargar la aplicación', 'error');
+            }
+        }
+
+        function shareApp() {
+            if (!currentApp) return;
+            
+            const url = window.location.href;
+            const title = `${currentApp.name || currentApp.filename} - APK Store`;
+            const text = `Mira esta aplicación: ${currentApp.name || currentApp.filename}`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: title,
+                    text: text,
+                    url: url
+                });
+            } else {
+                copyToClipboard(url);
+                showNotification('🔗 Enlace copiado al portapapeles', 'success');
+            }
+        }
+
+        function copyDownloadLink() {
+            if (!currentApp) return;
+            
+            const downloadUrl = `${window.location.origin}/download/${currentApp.filename}`;
+            copyToClipboard(downloadUrl);
+            showNotification('📋 Enlace de descarga copiado', 'success');
+        }
+
+        function reportApp() {
+            const reason = prompt('¿Por qué quieres reportar esta aplicación?');
+            if (reason && reason.trim()) {
+                // Aquí podrías enviar el reporte a un servidor
+                showNotification('🚩 Reporte enviado. Gracias por tu colaboración.', 'success');
+            }
+        }
+
+        function copyToClipboard(text) {
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text);
+            } else {
+                // Fallback
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+            }
+        }
+
+        function getCategoryEmoji(category) {
+            const categories = {
+                'games': '🎮',
+                'productivity': '📊',
+                'social': '👥',
+                'tools': '🛠️',
+                'entertainment': '🎬',
+                'education': '📚',
+                'other': '📦'
+            };
+            return categories[category] || '📦';
+        }
+
+        function getCategoryName(category) {
+            const categories = {
+                'games': 'Juegos',
+                'productivity': 'Productividad',
+                'social': 'Social',
+                'tools': 'Herramientas',
+                'entertainment': 'Entretenimiento',
+                'education': 'Educación',
+                'other': 'Otros'
+            };
+            return categories[category] || 'Otros';
+        }
+
+        function formatFileSize(bytes) {
+            if (!bytes) return 'N/A';
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('es-ES', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            } catch (error) {
+                return 'N/A';
+            }
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#2ecc71' : type === 'error' ? '#e74c3c' : '#3498db'};
+                color: white;
+                padding: 15px 20px;
+                border-radius: 10px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                z-index: 9999;
+                font-weight: bold;
+                animation: slideIn 0.3s ease;
+                max-width: 300px;
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 3000);
+        }
+
+        // Add animation styles
+        if (!document.getElementById('animationCSS')) {
+            const style = document.createElement('style');
+            style.id = 'animationCSS';
+            style.textContent = `
+                @keyframes slideIn {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+    </script>
+</body>
+
+</html>

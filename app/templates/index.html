@@ -11,7 +11,8 @@
 
 <body>
     <div class="container">
-        <h1>SUBIR APK</h1>
+        <h1>💻 PORTAL DESARROLLADORES</h1>
+        <p class="subtitle">Sube tu aplicación APK y compártela con el mundo</p>
         
         <!-- Sección de archivos existentes -->
         <div class="files-section" id="filesSection" style="display: none;">
@@ -28,6 +29,63 @@
                     Arrastra tu archivo APK aquí o haz clic para seleccionar
                 </div>
             </label>
+            
+            <!-- Campos adicionales de metadata -->
+            <div class="metadata-section" id="metadataSection" style="display: none;">
+                <h3>📝 Información de la aplicación</h3>
+                <div class="metadata-grid">
+                    <div class="input-group">
+                        <label for="appName">Nombre de la aplicación *</label>
+                        <input type="text" id="appName" name="app_name" placeholder="Ej: Mi Aplicación Genial" required>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="developer">Desarrollador *</label>
+                        <input type="text" id="developer" name="developer" placeholder="Tu nombre o empresa" required>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="category">Categoría</label>
+                        <select id="category" name="category">
+                            <option value="other">📦 Otros</option>
+                            <option value="games">🎮 Juegos</option>
+                            <option value="productivity">📊 Productividad</option>
+                            <option value="social">👥 Social</option>
+                            <option value="tools">🛠️ Herramientas</option>
+                            <option value="entertainment">🎬 Entretenimiento</option>
+                            <option value="education">📚 Educación</option>
+                        </select>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="version">Versión</label>
+                        <input type="text" id="version" name="version" placeholder="1.0.0">
+                    </div>
+                    
+                    <div class="input-group full-width">
+                        <label for="description">Descripción</label>
+                        <textarea id="description" name="description" placeholder="Describe qué hace tu aplicación, sus características principales, etc." rows="4"></textarea>
+                    </div>
+                    
+                    <!-- Subida de icono opcional -->
+                    <div class="input-group">
+                        <label for="icon">Icono de la app (opcional)</label>
+                        <input type="file" id="icon" name="icon" accept="image/*" class="file-input">
+                        <div class="file-preview" id="iconPreview" style="display: none;">
+                            <img id="iconImg" src="" alt="Preview">
+                            <button type="button" onclick="removeIcon()" class="remove-btn">❌</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Subida de screenshots opcionales -->
+                    <div class="input-group full-width">
+                        <label for="screenshots">Screenshots (opcional - máximo 5)</label>
+                        <input type="file" id="screenshots" name="screenshots" accept="image/*" multiple class="file-input">
+                        <div class="screenshots-preview" id="screenshotsPreview"></div>
+                    </div>
+                </div>
+            </div>
+            
             <input class="btnUpload" type="submit" value="SUBIR" id="uploadBtn" disabled>
         </form>
         
@@ -111,15 +169,105 @@
         function updateFileName() {
             const file = fileInput.files[0];
             const uploadText = document.querySelector('.uploadText');
+            const metadataSection = document.getElementById('metadataSection');
+            
             if (file) {
                 uploadText.innerHTML = `<div style="font-size: 2.5rem; margin-bottom: 10px; opacity: 0.8;">📱</div>Archivo seleccionado:<br><strong>${file.name}</strong>`;
-                uploadBtn.disabled = false;
-                uploadBtn.style.opacity = '1';
+                
+                // Mostrar sección de metadata
+                metadataSection.style.display = 'block';
+                
+                // Auto-llenar nombre de la app basado en el archivo
+                const appNameInput = document.getElementById('appName');
+                if (!appNameInput.value) {
+                    const fileName = file.name.replace('.apk', '').replace(/[_-]/g, ' ');
+                    appNameInput.value = fileName.charAt(0).toUpperCase() + fileName.slice(1);
+                }
+                
+                // Habilitar botón solo si los campos requeridos están llenos
+                checkRequiredFields();
             } else {
                 uploadText.innerHTML = '<div style="font-size: 2.5rem; margin-bottom: 10px; opacity: 0.7;">📱</div>Arrastra tu archivo APK aquí o haz clic para seleccionar';
+                metadataSection.style.display = 'none';
                 uploadBtn.disabled = true;
                 uploadBtn.style.opacity = '0.6';
             }
+        }
+        
+        function checkRequiredFields() {
+            const file = fileInput.files[0];
+            const appName = document.getElementById('appName').value.trim();
+            const developer = document.getElementById('developer').value.trim();
+            
+            const allRequired = file && appName && developer;
+            uploadBtn.disabled = !allRequired;
+            uploadBtn.style.opacity = allRequired ? '1' : '0.6';
+        }
+        
+        // Event listeners para campos requeridos
+        document.getElementById('appName').addEventListener('input', checkRequiredFields);
+        document.getElementById('developer').addEventListener('input', checkRequiredFields);
+        
+        // Preview de icono
+        document.getElementById('icon').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const preview = document.getElementById('iconPreview');
+            const img = document.getElementById('iconImg');
+            
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    img.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // Preview de screenshots
+        document.getElementById('screenshots').addEventListener('change', function(e) {
+            const files = Array.from(e.target.files).slice(0, 5); // Máximo 5
+            const preview = document.getElementById('screenshotsPreview');
+            
+            preview.innerHTML = '';
+            
+            files.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const div = document.createElement('div');
+                    div.className = 'screenshot-item';
+                    div.innerHTML = `
+                        <img src="${e.target.result}" alt="Screenshot ${index + 1}">
+                        <button type="button" onclick="removeScreenshot(${index})" class="remove-btn">❌</button>
+                    `;
+                    preview.appendChild(div);
+                };
+                reader.readAsDataURL(file);
+            });
+        });
+        
+        function removeIcon() {
+            document.getElementById('icon').value = '';
+            document.getElementById('iconPreview').style.display = 'none';
+        }
+        
+        function removeScreenshot(index) {
+            // Recrear el input de screenshots sin el archivo eliminado
+            const input = document.getElementById('screenshots');
+            const dt = new DataTransfer();
+            const files = Array.from(input.files);
+            
+            files.forEach((file, i) => {
+                if (i !== index) {
+                    dt.items.add(file);
+                }
+            });
+            
+            input.files = dt.files;
+            
+            // Actualizar preview
+            const event = new Event('change');
+            input.dispatchEvent(event);
         }
         
         async function loadExistingFiles() {

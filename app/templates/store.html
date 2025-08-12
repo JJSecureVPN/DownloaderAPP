@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@JHServices - APK Store</title>
+    <link rel="stylesheet" href="../static/css/store.css">
+</head>
+
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>📱 APK Store</h1>
+            <div class="header-actions">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="🔍 Buscar aplicaciones...">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="container">
+            <!-- Sección de estadísticas -->
+            <div class="stats-section">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalApps">0</div>
+                    <div class="stat-label">Aplicaciones</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalDownloads">0</div>
+                    <div class="stat-label">Descargas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalDevelopers">0</div>
+                    <div class="stat-label">Desarrolladores</div>
+                </div>
+            </div>
+
+            <!-- Filtros -->
+            <div class="filters-section">
+                <div class="filter-group">
+                    <label>Categoría:</label>
+                    <select id="categoryFilter">
+                        <option value="">Todas las categorías</option>
+                        <option value="games">🎮 Juegos</option>
+                        <option value="productivity">📊 Productividad</option>
+                        <option value="social">👥 Social</option>
+                        <option value="tools">🛠️ Herramientas</option>
+                        <option value="entertainment">🎬 Entretenimiento</option>
+                        <option value="education">📚 Educación</option>
+                        <option value="other">📦 Otros</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Ordenar por:</label>
+                    <select id="sortFilter">
+                        <option value="newest">Más recientes</option>
+                        <option value="oldest">Más antiguos</option>
+                        <option value="name">Nombre A-Z</option>
+                        <option value="downloads">Más descargados</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Grid de aplicaciones -->
+            <div class="apps-grid" id="appsGrid">
+                <div class="loading-apps">
+                    <div class="spinner"></div>
+                    <p>Cargando aplicaciones...</p>
+                </div>
+            </div>
+
+            <!-- Mensaje cuando no hay apps -->
+            <div class="no-apps" id="noApps" style="display: none;">
+                <div class="no-apps-icon">📱</div>
+                <h3>No hay aplicaciones disponibles</h3>
+                <p>Sé el primero en subir una aplicación</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div class="container">
+            <p>🚀 Desarrollado con ❤️ por <strong>@JHServices</strong></p>
+            <p>📱 APK Store - Comparte tus aplicaciones con el mundo</p>
+        </div>
+    </div>
+
+    <script>
+        let allApps = [];
+        let filteredApps = [];
+
+        // Cargar aplicaciones al iniciar
+        document.addEventListener('DOMContentLoaded', loadApps);
+
+        // Event listeners para filtros
+        document.getElementById('searchInput').addEventListener('input', filterApps);
+        document.getElementById('categoryFilter').addEventListener('change', filterApps);
+        document.getElementById('sortFilter').addEventListener('change', filterApps);
+
+        async function loadApps() {
+            try {
+                const response = await fetch('/api/apps');
+                allApps = await response.json();
+                filteredApps = [...allApps];
+                
+                updateStats();
+                displayApps(filteredApps);
+                
+                if (allApps.length === 0) {
+                    showNoApps();
+                }
+            } catch (error) {
+                console.error('Error cargando aplicaciones:', error);
+                showNoApps();
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('totalApps').textContent = allApps.length;
+            
+            const totalDownloads = allApps.reduce((sum, app) => sum + (app.downloads || 0), 0);
+            document.getElementById('totalDownloads').textContent = totalDownloads;
+            
+            const developers = new Set(allApps.map(app => app.developer || 'Anónimo'));
+            document.getElementById('totalDevelopers').textContent = developers.size;
+        }
+
+        function displayApps(apps) {
+            const grid = document.getElementById('appsGrid');
+            const noApps = document.getElementById('noApps');
+            
+            if (apps.length === 0) {
+                grid.style.display = 'none';
+                noApps.style.display = 'block';
+                return;
+            }
+            
+            grid.style.display = 'grid';
+            noApps.style.display = 'none';
+            
+            grid.innerHTML = apps.map(app => createAppCard(app)).join('');
+        }
+
+        function createAppCard(app) {
+            const defaultIcon = '📱';
+            const icon = app.icon ? `/static/uploads/icons/${app.icon}` : null;
+            const iconDisplay = icon ? `<img src="${icon}" alt="${app.name} icon" class="app-icon">` : `<div class="app-icon-emoji">${defaultIcon}</div>`;
+            
+            const category = getCategoryEmoji(app.category);
+            const downloads = app.downloads || 0;
+            const rating = app.rating || 0;
+            const stars = '⭐'.repeat(Math.floor(rating)) + '☆'.repeat(5 - Math.floor(rating));
+            
+            return `
+                <div class="app-card" onclick="openAppDetail('${app.filename}')">
+                    <div class="app-card-header">
+                        ${iconDisplay}
+                        <div class="app-category">${category}</div>
+                    </div>
+                    <div class="app-card-body">
+                        <h3 class="app-name">${app.name || app.filename}</h3>
+                        <p class="app-developer">por ${app.developer || 'Desarrollador Anónimo'}</p>
+                        <p class="app-description">${(app.description || 'Sin descripción disponible').substring(0, 80)}${(app.description || '').length > 80 ? '...' : ''}</p>
+                        
+                        <div class="app-stats">
+                            <div class="stat">
+                                <span class="stat-icon">📥</span>
+                                <span>${downloads}</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-icon">⭐</span>
+                                <span>${rating > 0 ? rating.toFixed(1) : 'N/A'}</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-icon">📦</span>
+                                <span>${formatFileSize(app.size)}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="app-card-footer">
+                        <button class="download-btn" onclick="event.stopPropagation(); downloadApp('${app.filename}', '${app.name || app.filename}')">
+                            📥 Descargar
+                        </button>
+                        <button class="info-btn" onclick="event.stopPropagation(); openAppDetail('${app.filename}')">
+                            ℹ️ Info
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getCategoryEmoji(category) {
+            const categories = {
+                'games': '🎮',
+                'productivity': '📊',
+                'social': '👥',
+                'tools': '🛠️',
+                'entertainment': '🎬',
+                'education': '📚',
+                'other': '📦'
+            };
+            return categories[category] || '📦';
+        }
+
+        function formatFileSize(bytes) {
+            if (!bytes) return 'N/A';
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function filterApps() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            const sortFilter = document.getElementById('sortFilter').value;
+            
+            // Filtrar por búsqueda y categoría
+            filteredApps = allApps.filter(app => {
+                const matchesSearch = !searchTerm || 
+                    (app.name || '').toLowerCase().includes(searchTerm) ||
+                    (app.developer || '').toLowerCase().includes(searchTerm) ||
+                    (app.description || '').toLowerCase().includes(searchTerm);
+                
+                const matchesCategory = !categoryFilter || app.category === categoryFilter;
+                
+                return matchesSearch && matchesCategory;
+            });
+            
+            // Ordenar
+            filteredApps.sort((a, b) => {
+                switch (sortFilter) {
+                    case 'newest':
+                        return new Date(b.upload_date || 0) - new Date(a.upload_date || 0);
+                    case 'oldest':
+                        return new Date(a.upload_date || 0) - new Date(b.upload_date || 0);
+                    case 'name':
+                        return (a.name || a.filename).localeCompare(b.name || b.filename);
+                    case 'downloads':
+                        return (b.downloads || 0) - (a.downloads || 0);
+                    default:
+                        return 0;
+                }
+            });
+            
+            displayApps(filteredApps);
+        }
+
+        function showNoApps() {
+            document.getElementById('appsGrid').style.display = 'none';
+            document.getElementById('noApps').style.display = 'block';
+        }
+
+        async function downloadApp(filename, appName) {
+            try {
+                // Incrementar contador de descargas
+                await fetch(`/api/apps/${filename}/download`, { method: 'POST' });
+                
+                // Descargar archivo
+                window.open(`/download/${filename}`, '_blank');
+                
+                // Mostrar notificación
+                showNotification(`📥 Descargando ${appName}...`, 'success');
+                
+                // Recargar apps para actualizar contadores
+                setTimeout(loadApps, 1000);
+            } catch (error) {
+                showNotification('❌ Error al descargar la aplicación', 'error');
+            }
+        }
+
+        function openAppDetail(filename) {
+            window.location.href = `/app/${filename}`;
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#2ecc71' : type === 'error' ? '#e74c3c' : '#3498db'};
+                color: white;
+                padding: 15px 20px;
+                border-radius: 10px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                z-index: 9999;
+                font-weight: bold;
+                animation: slideIn 0.3s ease;
+                max-width: 300px;
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 3000);
+        }
+
+        // CSS para animación
+        if (!document.getElementById('notificationCSS')) {
+            const style = document.createElement('style');
+            style.id = 'notificationCSS';
+            style.textContent = `
+                @keyframes slideIn {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+    </script>
+</body>
+
+</html>

@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# DownloaderAPP - Instalador Automático
-# Versión: 2.0
+# APK Store - Instalador Automático
+# Versión: 3.0
 # Repositorio: https://github.com/JJSecureVPN/DownloaderAPP
 
 set -e
 
-echo "🚀 Iniciando instalación de DownloaderAPP..."
+echo "🚀 Iniciando instalación de APK Store..."
 
 # Configuración
 url='https://github.com/JJSecureVPN/DownloaderAPP.git'
@@ -46,7 +46,7 @@ if [ -d "DownloaderAPP" ]; then
 fi
 
 # Clonar repositorio
-echo "📥 Descargando DownloaderAPP..."
+echo "📥 Descargando APK Store..."
 git clone $url &>/dev/null || error_exit "No se pudo clonar el repositorio"
 
 # Configurar proyecto
@@ -93,16 +93,30 @@ echo "🌍 Obteniendo IP pública..."
 public_ip=$(curl -4s --max-time 10 https://api.ipify.org 2>/dev/null || echo "IP_NO_DISPONIBLE")
 
 echo ""
-echo "✅ ¡DownloaderAPP instalado exitosamente!"
+echo "✅ ¡APK Store instalado exitosamente!"
 echo ""
-echo "📱 URLs de acceso:"
+echo "🎯 ENLACES DE ACCESO:"
+echo ""
+echo "🏪 TIENDA PÚBLICA (Para usuarios finales):"
 echo "   🏠 Local:    http://localhost:$port"
 if [ "$public_ip" != "IP_NO_DISPONIBLE" ]; then
     echo "   🌐 Público:  http://$public_ip:$port"
 fi
 echo "   🔗 Dominio:  http://vps.jhservices.com.ar:$port"
 echo ""
-echo "🛠️  Comandos útiles:"
+echo "💻 PORTAL DESARROLLADORES (Para subir apps):"
+echo "   🏠 Local:    http://localhost:$port/upload"
+if [ "$public_ip" != "IP_NO_DISPONIBLE" ]; then
+    echo "   🌐 Público:  http://$public_ip:$port/upload"
+fi
+echo "   🔗 Dominio:  http://vps.jhservices.com.ar:$port/upload"
+echo ""
+echo "ℹ️  INFORMACIÓN IMPORTANTE:"
+echo "   • La TIENDA es pública - cualquiera puede ver y descargar apps"
+echo "   • El PORTAL es privado - solo comparte el enlace con desarrolladores"
+echo "   • Las apps subidas aparecen automáticamente en la tienda"
+echo ""
+echo "🛠️  COMANDOS ÚTILES:"
 echo "   Ver logs:    screen -r downloader"
 echo "   Detener:     screen -S downloader -X quit"
 echo "   Reiniciar:   cd DownloaderAPP && screen -dmS downloader python3 main.py $port"
