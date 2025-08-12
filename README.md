@@ -226,17 +226,105 @@ Después de la instalación, accede a:
 - Número de desarrolladores activos
 - Estadísticas por aplicación individual
 
-## 🔄 Actualización
+## 🔄 Actualización sin Perder Datos
 
-Para actualizar a la última versión:
+### 🛡️ **Actualización Automática (Recomendado)**
+
+Para actualizar a la última versión **SIN PERDER** las aplicaciones subidas por usuarios:
 
 ```bash
-# Detener servidor
-screen -S downloader -X quit
+# Método 1: Script automático (más seguro)
+cd DownloaderAPP
+./update_vps.sh
+```
 
-# Ejecutar instalador nuevamente
-wget https://raw.githubusercontent.com/JJSecureVPN/DownloaderAPP/main/installer.sh
-sudo bash installer.sh
+### 🔧 **Actualización Manual Paso a Paso**
+
+Si prefieres hacerlo manualmente:
+
+```bash
+# 1. Crear backup preventivo (opcional pero recomendado)
+cd DownloaderAPP
+cp -r uploads/ uploads_backup_$(date +%Y%m%d_%H%M%S)/
+
+# 2. Detener servidor
+screen -S downloader -X quit
+# O si usas otro método:
+# sudo systemctl stop downloader-app
+# kill $(ps aux | grep "python.*main.py" | awk '{print $2}')
+
+# 3. Actualizar código desde GitHub
+git pull origin main
+
+# 4. Verificar que los datos siguen ahí
+ls -la uploads/
+cat uploads/apps_metadata.json
+
+# 5. Instalar nuevas dependencias (si las hay)
+pip3 install -r requirements.txt
+
+# 6. Reiniciar servidor
+screen -dmS downloader python3 main.py 5001
+# O con systemd: sudo systemctl start downloader-app
+```
+
+### 🔒 **¿Por qué NO se pierden los datos?**
+
+- ✅ **Protección automática**: La carpeta `uploads/` está en `.gitignore`
+- ✅ **Git solo actualiza código**: Nunca toca archivos de datos de usuarios
+- ✅ **Backup automático**: El script crea respaldos antes de actualizar
+- ✅ **Separación total**: Código y datos están completamente separados
+
+### 📁 **Datos que se Conservan Siempre:**
+
+- 📦 **Archivos APK** subidos por usuarios
+- 🖼️ **Iconos** de aplicaciones
+- 📸 **Screenshots** de aplicaciones  
+- 📋 **Metadata** (apps_metadata.json)
+- 📊 **Contadores de descarga**
+- ⭐ **Calificaciones** y estadísticas
+
+### 🚀 **Configuración con Systemd (Más Profesional)**
+
+Para un manejo más profesional del servicio:
+
+```bash
+# 1. Copiar archivo de servicio
+sudo cp downloader-app.service /etc/systemd/system/
+
+# 2. Editar rutas en el archivo
+sudo nano /etc/systemd/system/downloader-app.service
+# Cambiar: WorkingDirectory=/ruta/a/tu/DownloaderAPP
+# Cambiar: User=tu-usuario
+
+# 3. Habilitar y iniciar servicio
+sudo systemctl daemon-reload
+sudo systemctl enable downloader-app
+sudo systemctl start downloader-app
+
+# 4. Para actualizar en el futuro:
+sudo systemctl stop downloader-app
+git pull origin main
+sudo systemctl start downloader-app
+```
+
+### 📊 **Verificar Actualización Exitosa**
+
+Después de actualizar, verifica que todo funciona:
+
+```bash
+# 1. Verificar que el servidor está corriendo
+ps aux | grep python
+
+# 2. Verificar que los datos siguen ahí
+ls -la uploads/
+wc -l uploads/apps_metadata.json
+
+# 3. Probar la aplicación
+curl http://localhost:5001/api/apps
+
+# 4. Ver logs si hay problemas
+tail -f server.log
 ```
 
 ##  Solución de Problemas
