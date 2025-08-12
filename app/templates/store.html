@@ -67,10 +67,13 @@
 
             <!-- Grid de aplicaciones -->
             <div class="apps-grid" id="appsGrid">
-                <div class="loading-apps">
-                    <div class="spinner"></div>
-                    <p>Cargando aplicaciones...</p>
-                </div>
+                <!-- El contenido se carga dinámicamente -->
+            </div>
+
+            <!-- Mensaje de carga -->
+            <div class="loading-apps" id="loadingApps">
+                <div class="spinner"></div>
+                <p>Cargando aplicaciones...</p>
             </div>
 
             <!-- Mensaje cuando no hay apps -->
@@ -102,19 +105,34 @@
         document.getElementById('sortFilter').addEventListener('change', filterApps);
 
         async function loadApps() {
+            console.log('[DEBUG] Iniciando carga de aplicaciones...');
             try {
+                console.log('[DEBUG] Haciendo petición a /api/apps');
                 const response = await fetch('/api/apps');
-                allApps = await response.json();
+                console.log('[DEBUG] Respuesta recibida:', response.status, response.statusText);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const responseText = await response.text();
+                console.log('[DEBUG] Datos en bruto:', responseText);
+                
+                allApps = JSON.parse(responseText);
+                console.log('[DEBUG] Aplicaciones parseadas:', allApps);
                 filteredApps = [...allApps];
                 
                 updateStats();
                 displayApps(filteredApps);
                 
                 if (allApps.length === 0) {
+                    console.log('[DEBUG] No hay apps, mostrando mensaje vacío');
                     showNoApps();
+                } else {
+                    console.log('[DEBUG] Se encontraron', allApps.length, 'aplicaciones');
                 }
             } catch (error) {
-                console.error('Error cargando aplicaciones:', error);
+                console.error('[ERROR] Error cargando aplicaciones:', error);
                 showNoApps();
             }
         }
@@ -130,24 +148,33 @@
         }
 
         function displayApps(apps) {
+            console.log('[DEBUG] Mostrando aplicaciones:', apps);
             const grid = document.getElementById('appsGrid');
             const noApps = document.getElementById('noApps');
+            const loadingApps = document.getElementById('loadingApps');
+            
+            // Ocultar mensaje de carga
+            loadingApps.style.display = 'none';
             
             if (apps.length === 0) {
+                console.log('[DEBUG] No hay apps para mostrar');
                 grid.style.display = 'none';
                 noApps.style.display = 'block';
                 return;
             }
             
+            console.log('[DEBUG] Mostrando grid con', apps.length, 'aplicaciones');
             grid.style.display = 'grid';
             noApps.style.display = 'none';
             
-            grid.innerHTML = apps.map(app => createAppCard(app)).join('');
+            const html = apps.map(app => createAppCard(app)).join('');
+            console.log('[DEBUG] HTML generado:', html.substring(0, 200) + '...');
+            grid.innerHTML = html;
         }
 
         function createAppCard(app) {
             const defaultIcon = '📱';
-            const icon = app.icon ? `/static/uploads/icons/${app.icon}` : null;
+            const icon = app.icon ? `/uploads/icons/${app.icon}` : null;
             const iconDisplay = icon ? `<img src="${icon}" alt="${app.name} icon" class="app-icon">` : `<div class="app-icon-emoji">${defaultIcon}</div>`;
             
             const category = getCategoryEmoji(app.category);
@@ -252,8 +279,13 @@
         }
 
         function showNoApps() {
-            document.getElementById('appsGrid').style.display = 'none';
-            document.getElementById('noApps').style.display = 'block';
+            const grid = document.getElementById('appsGrid');
+            const noApps = document.getElementById('noApps');
+            const loadingApps = document.getElementById('loadingApps');
+            
+            loadingApps.style.display = 'none';
+            grid.style.display = 'none';
+            noApps.style.display = 'block';
         }
 
         async function downloadApp(filename, appName) {

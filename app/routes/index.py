@@ -318,6 +318,16 @@ def download(filename):
     return send_from_directory(upload_folder, filename)
 
 
+def icons(filename):
+    """Servir iconos desde la carpeta uploads/icons"""
+    return send_from_directory(icons_folder, filename)
+
+
+def screenshots(filename):
+    """Servir screenshots desde la carpeta uploads/screenshots"""
+    return send_from_directory(screenshots_folder, filename)
+
+
 def setup_route(app: Flask):
     # Rutas principales
     app.add_url_rule('/', 'index', index)  # Página principal -> Tienda
@@ -325,6 +335,10 @@ def setup_route(app: Flask):
     app.add_url_rule('/upload', 'upload_page', upload_page)  # Portal desarrolladores
     app.add_url_rule('/developers', 'developers', upload_page)  # Alias para desarrolladores
     app.add_url_rule('/app/<filename>', 'app_detail', app_detail)
+    
+    # Rutas para archivos estáticos
+    app.add_url_rule('/uploads/icons/<filename>', 'icons', icons)
+    app.add_url_rule('/uploads/screenshots/<filename>', 'screenshots', screenshots)
     
     # API endpoints
     app.add_url_rule('/upload', 'upload', upload, methods=['POST'])
