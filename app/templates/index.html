@@ -12,13 +12,300 @@
 <body>
     <div class="container">
         <h1>SUBIR APK</h1>
-        <form class="form" action="/upload" method="POST" enctype="multipart/form-data">
-            <div class="areaUpload">
-                <input class="fileUpload" type="file" name="file" id="file">
-            </div>
-            <input class="btnUpload" type="submit" value="SUBIR">
+        
+        <!-- Sección de archivos existentes -->
+        <div class="files-section" id="filesSection" style="display: none;">
+            <h3>📱 Archivos APK disponibles:</h3>
+            <div class="files-list" id="filesList"></div>
+            <button onclick="clearAllFiles()" class="clearBtn">🗑️ Limpiar todo</button>
+        </div>
+        
+        <form class="form" id="uploadForm" action="/upload" method="POST" enctype="multipart/form-data">
+            <label for="file" class="areaUpload">
+                <input class="fileUpload" type="file" name="file" id="file" accept=".apk">
+                <div class="uploadText">
+                    <div style="font-size: 2.5rem; margin-bottom: 10px; opacity: 0.7;">📱</div>
+                    Arrastra tu archivo APK aquí o haz clic para seleccionar
+                </div>
+            </label>
+            <input class="btnUpload" type="submit" value="SUBIR" id="uploadBtn" disabled>
         </form>
+        
+        <!-- Modal para archivos duplicados -->
+        <div class="modal" id="duplicateModal" style="display: none;">
+            <div class="modal-content">
+                <h3>⚠️ Archivo ya existe</h3>
+                <p>El archivo <strong id="duplicateFileName"></strong> ya existe. ¿Qué deseas hacer?</p>
+                <div class="modal-buttons">
+                    <button onclick="handleDuplicate('replace')" class="modal-btn replace-btn">🔄 Reemplazar</button>
+                    <button onclick="handleDuplicate('keep_both')" class="modal-btn keep-btn">📁 Mantener ambos</button>
+                    <button onclick="handleDuplicate('cancel')" class="modal-btn cancel-btn">❌ Cancelar</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="result" id="result" style="display: none;">
+            <h2>¡Archivo subido exitosamente!</h2>
+            <div class="downloadLink">
+                <label>Enlace de descarga:</label>
+                <div class="linkContainer">
+                    <input type="text" id="downloadUrl" readonly>
+                    <button onclick="copyToClipboard()" class="copyBtn">📋 Copiar</button>
+                </div>
+            </div>
+            <button onclick="uploadAnother()" class="newUploadBtn">Subir otro archivo</button>
+        </div>
+        
+        <div class="loading" id="loading" style="display: none;">
+            <div class="spinner"></div>
+            <p>Subiendo archivo...</p>
+        </div>
     </div>
+
+    <script>
+        const form = document.getElementById('uploadForm');
+        const fileInput = document.getElementById('file');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const result = document.getElementById('result');
+        const loading = document.getElementById('loading');
+        const downloadUrl = document.getElementById('downloadUrl');
+        const filesSection = document.getElementById('filesSection');
+        const filesList = document.getElementById('filesList');
+        const duplicateModal = document.getElementById('duplicateModal');
+        
+        let currentFile = null;
+        let duplicateAction = null;
+        
+        const areaUpload = document.querySelector('.areaUpload');
+        
+        // Cargar archivos existentes al iniciar
+        loadExistingFiles();
+        
+        areaUpload.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            areaUpload.classList.add('dragover');
+        });
+        
+        areaUpload.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            areaUpload.classList.remove('dragover');
+        });
+        
+        areaUpload.addEventListener('drop', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            areaUpload.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0 && files[0].name.toLowerCase().endsWith('.apk')) {
+                fileInput.files = files;
+                updateFileName();
+            } else {
+                alert('Por favor selecciona un archivo APK válido');
+            }
+        });
+        
+        fileInput.addEventListener('change', updateFileName);
+        
+        function updateFileName() {
+            const file = fileInput.files[0];
+            const uploadText = document.querySelector('.uploadText');
+            if (file) {
+                uploadText.innerHTML = `<div style="font-size: 2.5rem; margin-bottom: 10px; opacity: 0.8;">📱</div>Archivo seleccionado:<br><strong>${file.name}</strong>`;
+                uploadBtn.disabled = false;
+                uploadBtn.style.opacity = '1';
+            } else {
+                uploadText.innerHTML = '<div style="font-size: 2.5rem; margin-bottom: 10px; opacity: 0.7;">📱</div>Arrastra tu archivo APK aquí o haz clic para seleccionar';
+                uploadBtn.disabled = true;
+                uploadBtn.style.opacity = '0.6';
+            }
+        }
+        
+        async function loadExistingFiles() {
+            try {
+                const response = await fetch('/files');
+                const files = await response.json();
+                
+                if (files.length > 0) {
+                    displayFiles(files);
+                    filesSection.style.display = 'block';
+                } else {
+                    filesSection.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error cargando archivos:', error);
+            }
+        }
+        
+        function displayFiles(files) {
+            filesList.innerHTML = '';
+            files.forEach(file => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                
+                const size = formatFileSize(file.size);
+                
+                fileItem.innerHTML = `
+                    <div class="file-info">
+                        <strong>📱 ${file.filename}</strong>
+                        <div class="file-details">
+                            <span>📊 ${size}</span>
+                            <span>🕒 ${file.modified}</span>
+                        </div>
+                    </div>
+                    <div class="file-actions">
+                        <button onclick="copyFileUrl('${file.download_url}')" class="file-btn copy-btn">📋</button>
+                        <a href="${file.download_url}" download class="file-btn download-btn">⬇️</a>
+                        <button onclick="deleteFile('${file.filename}')" class="file-btn delete-btn">🗑️</button>
+                    </div>
+                `;
+                
+                filesList.appendChild(fileItem);
+            });
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        async function deleteFile(filename) {
+            if (confirm(`¿Estás seguro de que quieres eliminar ${filename}?`)) {
+                try {
+                    const response = await fetch(`/delete/${filename}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    if (response.ok) {
+                        await loadExistingFiles();
+                        alert('Archivo eliminado correctamente');
+                    } else {
+                        alert('Error al eliminar el archivo');
+                    }
+                } catch (error) {
+                    alert('Error al eliminar el archivo');
+                }
+            }
+        }
+        
+        async function clearAllFiles() {
+            if (confirm('¿Estás seguro de que quieres eliminar TODOS los archivos? Esta acción no se puede deshacer.')) {
+                try {
+                    const response = await fetch('/clear', {
+                        method: 'POST'
+                    });
+                    
+                    if (response.ok) {
+                        await loadExistingFiles();
+                        alert('Todos los archivos eliminados correctamente');
+                    } else {
+                        alert('Error al eliminar los archivos');
+                    }
+                } catch (error) {
+                    alert('Error al eliminar los archivos');
+                }
+            }
+        }
+        
+        function copyFileUrl(url) {
+            navigator.clipboard.writeText(url).then(() => {
+                alert('¡Enlace copiado al portapapeles!');
+            });
+        }
+        
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('Por favor selecciona un archivo APK');
+                return;
+            }
+            
+            currentFile = file;
+            
+            // Verificar si el archivo ya existe
+            const response = await fetch('/files');
+            const existingFiles = await response.json();
+            const fileExists = existingFiles.some(f => f.filename === file.name.replace(' ', '_'));
+            
+            if (fileExists) {
+                document.getElementById('duplicateFileName').textContent = file.name;
+                duplicateModal.style.display = 'flex';
+                return;
+            }
+            
+            // Si no existe, subir directamente
+            uploadFile('replace');
+        });
+        
+        function handleDuplicate(action) {
+            duplicateModal.style.display = 'none';
+            if (action === 'cancel') {
+                return;
+            }
+            uploadFile(action);
+        }
+        
+        async function uploadFile(action) {
+            form.style.display = 'none';
+            loading.style.display = 'block';
+            
+            const formData = new FormData();
+            formData.append('file', currentFile);
+            formData.append('action', action);
+            
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    downloadUrl.value = data.download_url;
+                    
+                    loading.style.display = 'none';
+                    result.style.display = 'block';
+                    
+                    // Actualizar lista de archivos
+                    await loadExistingFiles();
+                } else {
+                    throw new Error(data.error || 'Error al subir el archivo');
+                }
+            } catch (error) {
+                alert('Error al subir el archivo: ' + error.message);
+                loading.style.display = 'none';
+                form.style.display = 'block';
+            }
+        }
+        
+        function copyToClipboard() {
+            downloadUrl.select();
+            document.execCommand('copy');
+            
+            const copyBtn = document.querySelector('.copyBtn');
+            const originalText = copyBtn.textContent;
+            copyBtn.textContent = '✅ Copiado!';
+            setTimeout(() => {
+                copyBtn.textContent = originalText;
+            }, 2000);
+        }
+        
+        function uploadAnother() {
+            result.style.display = 'none';
+            form.style.display = 'block';
+            form.reset();
+            updateFileName();
+        }
+        
+        updateFileName();
+    </script>
 </body>
 
 </html>

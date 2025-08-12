@@ -1,71 +1,477 @@
 @import url('https://fonts.googleapis.com/css?family=Open+Sans:400,700');
 
+* {
+    box-sizing: border-box;
+}
 
 html,
 body {
     margin: 0;
     padding: 0;
+    min-height: 100vh;
 }
 
 body {
+    font-family: 'Open Sans', sans-serif;
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    color: #fff;
+    padding: 20px;
+    min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 100vh;
-    width: 100vw;
-    overflow: hidden;
-    font-family: 'Open Sans', sans-serif;
-    background: #25272c;
 }
 
 .container {
-    margin-right: 10px;
-    margin-left: 10px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 250px;
-    width: 400px;
-    background: #1e2025;
-    padding: 10px;
-    border-radius: 50px;
-    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.5);
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 600px;
+    width: 100%;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    text-align: center;
 }
 
 .container h1 {
     color: #fff;
     font-size: 2.5rem;
-    font-weight: 200;
+    font-weight: 700;
+    margin-bottom: 30px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
-.form {
-    width: 100%;
+/* Sección de archivos existentes */
+.files-section {
+    margin-bottom: 30px;
+    text-align: left;
 }
 
-input[type=file]::file-selector-button {
-    display: none;
-}
-
-input[type=file] {
+.files-section h3 {
     color: #fff;
-    padding: 20px;
+    margin-bottom: 15px;
+    font-size: 1.2rem;
 }
 
-.form .areaUpload {
-    width: 100%;
-    background: #1e2025;
-    border: 2px dashed #fff;
-    border-radius: 50px;
-    margin-bottom: 25px;
-}
-
-.form .btnUpload {
+.files-list {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
     padding: 15px;
-    background: #1a1c1f;
+    margin-bottom: 15px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.file-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    margin-bottom: 10px;
+    transition: all 0.3s ease;
+}
+
+.file-item:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+}
+
+.file-item:last-child {
+    margin-bottom: 0;
+}
+
+.file-info {
+    flex: 1;
+}
+
+.file-info strong {
+    display: block;
+    margin-bottom: 5px;
+    color: #fff;
+}
+
+.file-details {
+    font-size: 0.9rem;
+    opacity: 0.7;
+}
+
+.file-details span {
+    margin-right: 15px;
+}
+
+.file-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.file-btn {
+    background: rgba(255, 255, 255, 0.2);
     border: none;
-    border-radius: 50px;
-    width: 100%;
+    border-radius: 5px;
+    padding: 8px 10px;
     color: #fff;
     cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+.file-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+.copy-btn:hover {
+    background: rgba(52, 152, 219, 0.7);
+}
+
+.download-btn:hover {
+    background: rgba(46, 204, 113, 0.7);
+}
+
+.delete-btn:hover {
+    background: rgba(231, 76, 60, 0.7);
+}
+
+.clearBtn {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    border: none;
+    border-radius: 10px;
+    padding: 10px 20px;
+    color: #fff;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.clearBtn:hover {
+    background: linear-gradient(135deg, #c0392b, #a93226);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+}
+
+/* Formulario de subida */
+.form {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.areaUpload {
+    position: relative;
+    width: 100%;
+    min-height: 150px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px dashed rgba(255, 255, 255, 0.3);
+    border-radius: 15px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.areaUpload:hover {
+    border-color: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.areaUpload.dragover {
+    border-color: #3498db;
+    background: rgba(52, 152, 219, 0.2);
+    transform: scale(1.02);
+}
+
+.fileUpload {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.uploadText {
+    text-align: center;
+    color: #fff;
+    font-size: 1.1rem;
+    padding: 20px;
+    pointer-events: none;
+    transition: all 0.3s ease;
+}
+
+.btnUpload {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    opacity: 0.6;
+}
+
+.btnUpload:enabled {
+    opacity: 1;
+}
+
+.btnUpload:enabled:hover {
+    background: linear-gradient(135deg, #2980b9, #21618c);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+}
+
+.btnUpload:disabled {
+    cursor: not-allowed;
+}
+
+/* Modal para duplicados */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: linear-gradient(135deg, #2c3e50, #34495e);
+    border-radius: 15px;
+    padding: 30px;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.modal-content h3 {
+    margin-top: 0;
+    color: #f39c12;
+    font-size: 1.5rem;
+}
+
+.modal-content p {
+    margin: 20px 0;
+    color: #ecf0f1;
+    font-size: 1.1rem;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.modal-btn {
+    flex: 1;
+    min-width: 110px;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+}
+
+.replace-btn {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+}
+
+.replace-btn:hover {
+    background: linear-gradient(135deg, #e67e22, #d35400);
+}
+
+.keep-btn {
+    background: linear-gradient(135deg, #27ae60, #229954);
+}
+
+.keep-btn:hover {
+    background: linear-gradient(135deg, #229954, #1e8449);
+}
+
+.cancel-btn {
+    background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+}
+
+.cancel-btn:hover {
+    background: linear-gradient(135deg, #7f8c8d, #6c7b7d);
+}
+
+/* Resultados */
+.result {
+    background: rgba(46, 204, 113, 0.1);
+    border: 1px solid rgba(46, 204, 113, 0.3);
+    border-radius: 15px;
+    padding: 30px;
+    text-align: center;
+}
+
+.result h2 {
+    color: #2ecc71;
+    margin-top: 0;
+    font-size: 1.8rem;
+}
+
+.downloadLink {
+    margin: 20px 0;
+}
+
+.downloadLink label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.linkContainer {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.linkContainer input {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-size: 0.95rem;
+}
+
+.linkContainer input:focus {
+    outline: none;
+    border-color: #3498db;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.copyBtn {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    border: none;
+    border-radius: 8px;
+    padding: 12px 20px;
+    color: #fff;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.copyBtn:hover {
+    background: linear-gradient(135deg, #2980b9, #21618c);
+}
+
+.newUploadBtn {
+    background: linear-gradient(135deg, #9b59b6, #8e44ad);
+    border: none;
+    border-radius: 10px;
+    padding: 12px 30px;
+    color: #fff;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    margin-top: 20px;
+}
+
+.newUploadBtn:hover {
+    background: linear-gradient(135deg, #8e44ad, #7d3c98);
+    transform: translateY(-2px);
+}
+
+/* Loading */
+.loading {
+    text-align: center;
+    padding: 40px;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading p {
+    color: #fff;
+    font-size: 1.2rem;
+    margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .container {
+        margin: 10px;
+        padding: 20px;
+    }
+    
+    .container h1 {
+        font-size: 2rem;
+    }
+    
+    .file-item {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+    
+    .file-actions {
+        justify-content: center;
+    }
+    
+    .linkContainer {
+        flex-direction: column;
+    }
+    
+    .modal-buttons {
+        flex-direction: column;
+    }
+    
+    .modal-btn {
+        width: 100%;
+    }
+}
+
+/* Scrollbar personalizado */
+.files-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.files-list::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.files-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+}
+
+.files-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
 }
