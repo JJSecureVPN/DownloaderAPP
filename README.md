@@ -35,21 +35,21 @@ Cuando subes un archivo que ya existe, obtienes 3 opciones:
 
 ## 🚀 Instalación Rápida
 
-### Método 1: Una línea (Recomendado)
-```bash
-sudo bash <(curl -s https://raw.githubusercontent.com/JJSecureVPN/DownloaderAPP/main/installer.sh)
-```
-
-### Método 2: Descarga directa
+### Método 1: Descarga directa (Recomendado)
 ```bash
 wget https://raw.githubusercontent.com/JJSecureVPN/DownloaderAPP/main/installer.sh
 sudo bash installer.sh
 ```
 
-### Método 3: Con curl
+### Método 2: Con curl
 ```bash
 curl -O https://raw.githubusercontent.com/JJSecureVPN/DownloaderAPP/main/installer.sh
 sudo bash installer.sh
+```
+
+### Método 3: Una línea (puede no funcionar en algunos servidores)
+```bash
+sudo bash <(curl -s https://raw.githubusercontent.com/JJSecureVPN/DownloaderAPP/main/installer.sh)
 ```
 
 ### Método 4: Clonación completa
@@ -156,10 +156,19 @@ Para actualizar a la última versión:
 screen -S downloader -X quit
 
 # Ejecutar instalador nuevamente
-sudo bash <(curl -s https://raw.githubusercontent.com/JJSecureVPN/DownloaderAPP/main/installer.sh)
+wget https://raw.githubusercontent.com/JJSecureVPN/DownloaderAPP/main/installer.sh
+sudo bash installer.sh
 ```
 
 ## 🐛 Solución de Problemas
+
+### Error de instalación con curl
+Si el comando `bash <(curl ...)` falla con errores como `/dev/fd/63: No such file or directory`:
+```bash
+# Usar método alternativo con wget
+wget https://raw.githubusercontent.com/JJSecureVPN/DownloaderAPP/main/installer.sh
+sudo bash installer.sh
+```
 
 ### Error de permisos
 ```bash
