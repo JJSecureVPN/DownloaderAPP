@@ -171,6 +171,14 @@ update_code() {
     
     # Fetch y pull
     print_info "Descargando últimos cambios..."
+    
+    # Verificar si hay cambios locales que puedan causar conflictos
+    if git status --porcelain | grep -q "update_vps.sh\|quick_update.sh\|README.md"; then
+        print_info "Detectados cambios locales, resolviendo automáticamente..."
+        git stash push -m "Auto-stash antes de actualización $(date)"
+        log "Cambios locales guardados en stash"
+    fi
+    
     if git fetch origin main; then
         if git pull origin main; then
             print_success "Código actualizado exitosamente"
@@ -184,8 +192,18 @@ update_code() {
                 echo ""
             fi
         else
-            print_error "Error durante git pull"
-            exit 1
+            print_error "Error durante git pull, intentando resolver..."
+            log "ERROR: Fallo en git pull, resolviendo con reset"
+            
+            # Resolver conflictos con reset hard
+            git reset --hard origin/main
+            if [[ $? -eq 0 ]]; then
+                print_success "Conflictos resueltos automáticamente"
+                log "Conflictos resueltos con git reset --hard"
+            else
+                print_error "No se pudieron resolver los conflictos"
+                exit 1
+            fi
         fi
     else
         print_error "Error durante git fetch"
@@ -239,12 +257,27 @@ update_dependencies() {
             PYTHON_CMD="python"
         fi
         
-        # Instalar dependencias
+        # Instalar dependencias críticas primero
+        print_info "Instalando dependencias críticas..."
+        critical_packages=("Flask==2.3.3" "gevent==23.7.0")
+        
+        for package in "${critical_packages[@]}"; do
+            if $PYTHON_CMD -m pip install "$package" --quiet --disable-pip-version-check; then
+                print_info "✓ $package instalado"
+            else
+                print_warning "⚠ Error instalando $package, reintentando..."
+                $PYTHON_CMD -m pip install "$package" --force-reinstall
+            fi
+        done
+        
+        # Instalar resto de dependencias
         if $PYTHON_CMD -m pip install -r requirements.txt --quiet --disable-pip-version-check; then
             print_success "Dependencias actualizadas"
             log "Dependencias instaladas/actualizadas"
         else
             print_warning "Algunas dependencias pueden no haberse instalado correctamente"
+            print_info "Reintentando instalación sin --quiet..."
+            $PYTHON_CMD -m pip install -r requirements.txt --force-reinstall
             log "Advertencia durante instalación de dependencias"
         fi
     else
