@@ -179,14 +179,27 @@ APK-Store/
 
 ### 🚀 **Comandos con Scripts Automáticos (Recomendado)**
 ```bash
-# Actualizar aplicación (mantiene datos)
+# Actualizar aplicación (mantiene datos, configura Nginx para acceso sin puerto)
 ./update_vps.sh
+
+# Después de ejecutar update_vps.sh, acceso:
+# ✅ SIN PUERTO: http://vps.jhservices.com.ar
+# ✅ CON PUERTO: http://vps.jhservices.com.ar:8080
 
 # Actualización rápida
 ./quick_update.sh
 
 # Configuración inicial de scripts
 ./setup_update_scripts.sh
+
+# Ejecutar en puerto 8080
+./run_port_8080.sh
+
+# Configurar Nginx + puerto alternativo
+./setup_alt_ports.sh
+
+# Detectar puertos libres automáticamente
+./detect_free_ports.sh
 
 # En Windows
 PowerShell -ExecutionPolicy Bypass -File .\update_windows.ps1
@@ -200,9 +213,9 @@ screen -r downloader
 # Detener servidor
 screen -S downloader -X quit
 
-# Reiniciar servidor
+# Reiniciar servidor en puerto 8080 (nuevo)
 cd DownloaderAPP
-screen -dmS downloader python3 main.py 5001
+screen -dmS downloader python3 main.py 8080
 
 # Ver aplicaciones subidas
 ls DownloaderAPP/uploads/*.apk
@@ -216,12 +229,60 @@ tail -f update.log
 # Detener servidor actual
 screen -S downloader -X quit
 
-# Iniciar en nuevo puerto (ejemplo: 8080)
+# Puerto 8080 (recomendado)
 cd DownloaderAPP
 screen -dmS downloader python3 main.py 8080
+
+# Otros puertos disponibles
+screen -dmS downloader python3 main.py 8081  # Puerto alternativo
+screen -dmS downloader python3 main.py 5001  # Puerto anterior (compatibilidad)
 ```
 
-### 🛠️ **Mantenimiento con Scripts**
+### 🌐 **Configuración con Nginx (Sin Puerto en URL)**
+```bash
+# Método automático (recomendado)
+./setup_nginx.sh
+
+# Método manual
+sudo apt install nginx
+sudo nano /etc/nginx/sites-available/apk-store
+# (Copiar configuración de nginx-config.conf)
+sudo ln -s /etc/nginx/sites-available/apk-store /etc/nginx/sites-enabled/
+sudo nginx -t && sudo systemctl restart nginx
+
+# Aplicación corre en 8080, Nginx en 80/443
+# Acceso sin puerto: http://vps.jhservices.com.ar
+```
+
+### 🔒 **Configuración SSL/HTTPS**
+```bash
+# Obtener certificado SSL gratuito
+./setup_ssl.sh
+
+# O manual con certbot
+sudo apt install certbot python3-certbot-nginx
+sudo certbot --nginx -d vps.jhservices.com.ar
+
+# Resultado: https://vps.jhservices.com.ar (¡Sin puerto!)
+```
+
+### 🛠️ **Verificación de Puertos**
+```bash
+# Ver qué puertos están en uso
+netstat -tulpn | grep :8080
+netstat -tulpn | grep :80
+netstat -tulpn | grep :443
+
+# Ver procesos de la aplicación
+ps aux | grep python
+ps aux | grep nginx
+
+# Verificar conectividad
+curl http://localhost:8080/api/apps
+curl http://vps.jhservices.com.ar:8080/api/apps
+```
+
+### � **Mantenimiento con Scripts**
 ```bash
 # Hacer backup manual
 cp -r uploads/ uploads_backup_$(date +%Y%m%d_%H%M%S)/
@@ -235,16 +296,141 @@ ls -t uploads_backup_* | tail -n +6 | xargs rm -rf
 
 # Verificar estado del servidor
 ps aux | grep python
-netstat -tulpn | grep :5001
+netstat -tulpn | grep :8080  # Puerto actualizado
+lsof -i :8080  # Verificar proceso en puerto 8080
 ```
 
-## 🌐 URLs de Acceso
+## 🌐 URLs de Acceso y Configuración de Puertos
 
-Después de la instalación, accede a:
+### 🚀 **Configuración de Puertos (Actualizada)**
 
-- **🏪 Tienda Principal**: `http://tu-servidor.com/`
-- **💻 Portal Desarrolladores**: `http://tu-servidor.com/upload`
-- **📱 Detalle de App**: `http://tu-servidor.com/app/nombre-app.apk`
+**APK Store** ahora usa el puerto **8080** por defecto para evitar conflictos comunes. Tienes varias opciones:
+
+#### **📡 Acceso Directo (Puerto 8080 - Nuevo Por Defecto)**
+- **🏪 Tienda Principal**: `http://vps.jhservices.com.ar:8080/`
+- **💻 Portal Desarrolladores**: `http://vps.jhservices.com.ar:8080/upload`
+- **📱 Detalle de App**: `http://vps.jhservices.com.ar:8080/app/nombre-app.apk`
+- **🔌 API**: `http://vps.jhservices.com.ar:8080/api/apps`
+
+#### **🌐 Con Proxy Reverso (Sin Puerto en URL) ⭐ NUEVO**
+Si configuras Nginx automáticamente, puedes acceder **sin especificar puerto**:
+- **🏪 Tienda**: `http://vps.jhservices.com.ar/` ← **¡SIN PUERTO!**
+- **💻 Portal**: `http://vps.jhservices.com.ar/upload` ← **¡SIN PUERTO!**
+- **🔒 HTTPS**: `https://vps.jhservices.com.ar/` (con SSL configurado)
+
+### 🔧 **Scripts de Configuración de Puertos (Actualizados)**
+
+#### **1. Actualización Automática con Nginx (⭐ RECOMENDADO)**
+```bash
+# Script completo que configura todo automáticamente
+./update_vps.sh
+
+# Esto hace:
+# ✅ Actualiza la aplicación al puerto 8080
+# ✅ Configura Nginx automáticamente para puerto 80
+# ✅ Resultado: http://vps.jhservices.com.ar (¡SIN PUERTO!)
+```
+
+#### **2. Ejecutar Solo en Puerto 8080**
+```bash
+# Opción A: Script automático
+./run_port_8080.sh
+
+# Opción B: Manual
+python3 main.py 8080 0.0.0.0
+
+# Acceso: http://vps.jhservices.com.ar:8080
+```
+
+#### **3. Configurar Nginx Independientemente**
+```bash
+# Para configurar Nginx sin actualizar la app
+./setup_nginx.sh
+
+# O usar puertos alternativos si 80/443 están ocupados
+./setup_alt_ports.sh
+```
+
+#### **4. Detectar Puertos Libres Automáticamente**
+```bash
+# El script encuentra puertos libres automáticamente
+./detect_free_ports.sh
+
+# Configura automáticamente sin conflictos
+```
+
+#### **5. Configurar SSL/HTTPS**
+```bash
+# Después de configurar Nginx
+./setup_ssl.sh
+
+# Resultado: https://vps.jhservices.com.ar (¡HTTPS sin puerto!)
+```
+
+### 📊 **Tabla de Puertos Disponibles (Actualizada)**
+
+| Puerto | Uso | URL de Acceso | Comando | Estado |
+|--------|-----|---------------|---------|---------|
+| **8080** | Aplicación directa | `http://vps.jhservices.com.ar:8080` | `python3 main.py 8080` | ⭐ **NUEVO POR DEFECTO** |
+| **80** | Nginx → 8080 | `http://vps.jhservices.com.ar` | `./update_vps.sh` | 🎯 **SIN PUERTO** |
+| **443** | HTTPS → 8080 | `https://vps.jhservices.com.ar` | `./setup_ssl.sh` | 🔒 **HTTPS SIN PUERTO** |
+| **8081** | Nginx alternativo | `http://vps.jhservices.com.ar:8081` | `./setup_alt_ports.sh` | 🔄 Si 80 está ocupado |
+| **8443** | HTTPS alternativo | `https://vps.jhservices.com.ar:8443` | Con certificados SSL | 🔒 Si 443 está ocupado |
+| **5001** | Puerto anterior | `http://vps.jhservices.com.ar:5001` | `python3 main.py 5001` | 📦 Compatibilidad |
+
+### ⚙️ **Configuración Avanzada (Actualizada)**
+
+#### **Configuración Automática con update_vps.sh (⭐ RECOMENDADO)**
+```bash
+# 🚀 UN SOLO COMANDO para todo:
+./update_vps.sh
+
+# Esto automáticamente:
+# ✅ Actualiza el código
+# ✅ Configura la aplicación en puerto 8080
+# ✅ Instala y configura Nginx para puerto 80
+# ✅ Resultado: http://vps.jhservices.com.ar (¡SIN PUERTO!)
+```
+
+#### **Nginx como Proxy Reverso Manual (Si el automático falla)**
+```bash
+# 1. La aplicación corre en 8080 internamente
+python3 main.py 8080 0.0.0.0 &
+
+# 2. Nginx redirige puerto 80 → 8080
+sudo ./setup_nginx.sh
+
+# 3. Acceso final sin puerto: http://vps.jhservices.com.ar
+```
+
+#### **SSL/HTTPS Gratuito con Let's Encrypt**
+```bash
+# 1. Primero ejecuta la actualización completa
+./update_vps.sh
+
+# 2. Luego agrega SSL automáticamente
+./setup_ssl.sh
+
+# 3. Resultado final: https://vps.jhservices.com.ar (¡HTTPS sin puerto!)
+```
+
+#### **Para Desarrollo/Testing (Método Simple)**
+```bash
+# Solo puerto 8080 directo (sin Nginx)
+./run_port_8080.sh
+
+# Acceso: http://vps.jhservices.com.ar:8080
+```
+
+#### **Verificar la Configuración Final**
+```bash
+# Verificar que todo funciona correctamente
+curl http://vps.jhservices.com.ar/api/apps          # Sin puerto
+curl http://vps.jhservices.com.ar:8080/api/apps     # Con puerto directo
+curl https://vps.jhservices.com.ar/api/apps         # HTTPS (si SSL está configurado)
+```
+
+Después de cualquier configuración de puertos, accede a:
 
 ## 📊 Ejemplos de Uso
 

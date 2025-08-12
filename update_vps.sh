@@ -34,6 +34,9 @@ echo -e "${NC}"
 BACKUP_DIR="uploads_backup_$(date +%Y%m%d_%H%M%S)"
 LOG_FILE="update_$(date +%Y%m%d_%H%M%S).log"
 TEMP_DIR="/tmp/downloader_update"
+APP_PORT="8080"  # Puerto actualizado para evitar conflictos
+NGINX_PORT="80"  # Puerto para Nginx (sin puerto en URL)
+DOMAIN="vps.jhservices.com.ar"
 
 # Función para logging
 log() {
@@ -147,6 +150,20 @@ stop_server() {
         fi
     fi
     
+    # Método 4: Buscar procesos en puertos específicos
+    for port in 8080 5001; do
+        PID=$(lsof -ti:$port 2>/dev/null)
+        if [[ ! -z "$PID" ]]; then
+            print_info "Deteniendo proceso en puerto $port (PID: $PID)"
+            kill "$PID" 2>/dev/null
+            sleep 2
+            if ! ps -p "$PID" > /dev/null 2>&1; then
+                print_success "Proceso detenido en puerto $port"
+                log "Proceso detenido en puerto $port (PID: $PID)"
+            fi
+        fi
+    done
+    
     print_info "No se encontró servidor corriendo"
     log "No se encontró servidor activo"
     return 0
@@ -211,8 +228,128 @@ update_code() {
     fi
 }
 
-# Función para verificar integridad de datos
-verify_data_integrity() {
+# Función para configurar Nginx automáticamente
+setup_nginx() {
+    print_step "Configurando Nginx para acceso sin puerto..."
+    
+    # Verificar si Nginx está instalado
+    if ! command_exists nginx; then
+        print_warning "Nginx no está instalado. ¿Deseas instalarlo? (y/n)"
+        read -p "Respuesta: " install_nginx
+        if [[ "$install_nginx" == "y" ]] || [[ "$install_nginx" == "Y" ]]; then
+            if command_exists apt; then
+                sudo apt update && sudo apt install -y nginx
+            elif command_exists yum; then
+                sudo yum install -y nginx
+            else
+                print_error "No se pudo instalar Nginx automáticamente"
+                return 1
+            fi
+        else
+            print_info "Nginx no instalado. La aplicación estará disponible en puerto $APP_PORT"
+            return 0
+        fi
+    fi
+    
+    # Crear configuración de Nginx
+    print_info "Creando configuración de Nginx..."
+    
+    sudo tee /etc/nginx/sites-available/apk-store > /dev/null <<EOF
+server {
+    listen $NGINX_PORT;
+    server_name $DOMAIN;
+
+    location / {
+        proxy_pass http://127.0.0.1:$APP_PORT;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        
+        # Para archivos grandes (APKs)
+        client_max_body_size 100M;
+        proxy_connect_timeout 600s;
+        proxy_send_timeout 600s;
+        proxy_read_timeout 600s;
+    }
+
+    # Servir archivos estáticos directamente (mejor rendimiento)
+    location /static/ {
+        alias $(pwd)/app/static/;
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    location /uploads/ {
+        alias $(pwd)/uploads/;
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+}
+EOF
+
+    # Habilitar el sitio
+    sudo ln -sf /etc/nginx/sites-available/apk-store /etc/nginx/sites-enabled/
+    
+    # Deshabilitar sitio por defecto si existe
+    if [[ -f /etc/nginx/sites-enabled/default ]]; then
+        sudo rm -f /etc/nginx/sites-enabled/default
+        print_info "Sitio por defecto de Nginx deshabilitado"
+    fi
+    
+    # Probar configuración
+    if sudo nginx -t; then
+        print_success "Configuración de Nginx válida"
+        
+        # Reiniciar Nginx
+        if sudo systemctl restart nginx && sudo systemctl enable nginx; then
+            print_success "Nginx configurado y iniciado correctamente"
+            log "Nginx configurado exitosamente"
+            return 0
+        else
+            print_error "Error al reiniciar Nginx"
+            return 1
+        fi
+    else
+        print_error "Error en la configuración de Nginx"
+        return 1
+    fi
+}
+
+# Función para verificar puertos
+check_ports() {
+    print_step "Verificando disponibilidad de puertos..."
+    
+    # Verificar puerto de la aplicación
+    if lsof -Pi :$APP_PORT -sTCP:LISTEN -t >/dev/null 2>&1; then
+        PID=$(lsof -Pi :$APP_PORT -sTCP:LISTEN -t)
+        print_warning "Puerto $APP_PORT está en uso por PID: $PID"
+        
+        # Si es nuestro proceso anterior, está bien
+        if ps -p $PID -o comm= | grep -q python; then
+            print_info "Es un proceso Python existente, será detenido durante la actualización"
+        fi
+    else
+        print_success "Puerto $APP_PORT disponible"
+    fi
+    
+    # Verificar puerto 80 para Nginx
+    if lsof -Pi :$NGINX_PORT -sTCP:LISTEN -t >/dev/null 2>&1; then
+        NGINX_PID=$(lsof -Pi :$NGINX_PORT -sTCP:LISTEN -t)
+        NGINX_PROC=$(ps -p $NGINX_PID -o comm= 2>/dev/null)
+        
+        if [[ "$NGINX_PROC" == "nginx" ]]; then
+            print_info "Nginx ya está corriendo en puerto $NGINX_PORT (perfecto)"
+        else
+            print_warning "Puerto $NGINX_PORT está ocupado por: $NGINX_PROC (PID: $NGINX_PID)"
+            print_info "Será necesario configurar Nginx en puerto alternativo"
+        fi
+    else
+        print_success "Puerto $NGINX_PORT disponible para Nginx"
+    fi
+    
+    log "Verificación de puertos completada"
+}
     print_step "Verificando integridad de datos de usuarios..."
     
     if [[ -d "uploads" ]]; then
@@ -310,23 +447,24 @@ start_server() {
     
     # Método 2: Screen
     if command_exists screen; then
-        screen -dmS downloader $PYTHON_CMD main.py 5001
+        screen -dmS downloader $PYTHON_CMD main.py $APP_PORT
         sleep 3
         if screen -list | grep -q "downloader"; then
-            print_success "Servidor iniciado en screen"
-            log "Servidor iniciado usando screen"
+            print_success "Servidor iniciado en screen (puerto $APP_PORT)"
+            log "Servidor iniciado usando screen en puerto $APP_PORT"
             return 0
         fi
     fi
     
     # Método 3: Nohup
-    nohup $PYTHON_CMD main.py 5001 > server.log 2>&1 &
+    nohup $PYTHON_CMD main.py $APP_PORT > server.log 2>&1 &
     SERVER_PID=$!
     sleep 3
     
     if ps -p $SERVER_PID > /dev/null; then
-        print_success "Servidor iniciado en background (PID: $SERVER_PID)"
-        log "Servidor iniciado usando nohup (PID: $SERVER_PID)"
+        print_success "Servidor iniciado en background (PID: $SERVER_PID, Puerto: $APP_PORT)"
+        log "Servidor iniciado usando nohup (PID: $SERVER_PID, Puerto: $APP_PORT)"
+        echo $SERVER_PID > server.pid
         return 0
     else
         print_error "Error al iniciar servidor"
@@ -344,12 +482,12 @@ verify_server() {
     
     # Probar conexión local
     if command_exists curl; then
-        if curl -s "http://localhost:5001" >/dev/null 2>&1; then
-            print_success "Servidor responde correctamente en puerto 5001"
-            log "Servidor verificado - responde en puerto 5001"
+        if curl -s "http://localhost:$APP_PORT" >/dev/null 2>&1; then
+            print_success "Servidor responde correctamente en puerto $APP_PORT"
+            log "Servidor verificado - responde en puerto $APP_PORT"
             
             # Probar API
-            if curl -s "http://localhost:5001/api/apps" >/dev/null 2>&1; then
+            if curl -s "http://localhost:$APP_PORT/api/apps" >/dev/null 2>&1; then
                 print_success "API funciona correctamente"
                 log "API verificada correctamente"
             else
@@ -357,11 +495,11 @@ verify_server() {
                 log "Advertencia: API no responde"
             fi
         else
-            print_warning "Servidor puede no estar respondiendo en puerto 5001"
-            log "Advertencia: Servidor no responde en puerto 5001"
+            print_warning "Servidor puede no estar respondiendo en puerto $APP_PORT"
+            log "Advertencia: Servidor no responde en puerto $APP_PORT"
         fi
     elif command_exists wget; then
-        if wget -q --spider "http://localhost:5001" 2>/dev/null; then
+        if wget -q --spider "http://localhost:$APP_PORT" 2>/dev/null; then
             print_success "Servidor responde correctamente"
             log "Servidor verificado con wget"
         else
@@ -409,9 +547,28 @@ show_summary() {
     
     echo ""
     print_info "🌐 Acceso a la aplicación:"
-    echo "   • Tienda: http://tu-servidor:5001/"
-    echo "   • Portal Desarrolladores: http://tu-servidor:5001/upload"
-    echo "   • API: http://tu-servidor:5001/api/apps"
+    
+    # Verificar si Nginx está configurado
+    if systemctl is-active --quiet nginx 2>/dev/null && [[ -f /etc/nginx/sites-available/apk-store ]]; then
+        echo "   🎉 ¡SIN PUERTO! http://$DOMAIN"
+        echo "   📱 Tienda: http://$DOMAIN"
+        echo "   🔧 Portal Desarrolladores: http://$DOMAIN/upload"
+        echo "   🔗 API: http://$DOMAIN/api/apps"
+        echo ""
+        print_success "¡Nginx configurado! Accede sin puerto: http://$DOMAIN"
+    else
+        echo "   📱 Tienda: http://$DOMAIN:$APP_PORT"
+        echo "   🔧 Portal Desarrolladores: http://$DOMAIN:$APP_PORT/upload"
+        echo "   🔗 API: http://$DOMAIN:$APP_PORT/api/apps"
+        echo ""
+        print_info "Para acceso sin puerto, configura Nginx ejecutando:"
+        echo "   ./setup_nginx.sh"
+    fi
+    
+    echo ""
+    print_info "🔗 URLs alternativas:"
+    echo "   • Localhost: http://localhost:$APP_PORT"
+    echo "   • IP directa: http://$(hostname -I | awk '{print $1}'):$APP_PORT"
     
     echo ""
     print_info "📋 Logs guardados en: $LOG_FILE"
@@ -440,9 +597,13 @@ main() {
         echo "Opciones:"
         echo "  --help, -h     Mostrar esta ayuda"
         echo "  --no-backup    No crear backup (no recomendado)"
+        echo "  --no-nginx     No configurar Nginx automáticamente"
         echo "  --force        Forzar actualización sin confirmación"
         echo ""
         echo "Este script actualiza DownloaderAPP preservando todos los datos."
+        echo "Con Nginx configurado, la aplicación estará disponible en:"
+        echo "  http://$DOMAIN (sin puerto)"
+        echo ""
         exit 0
     fi
     
@@ -456,6 +617,7 @@ main() {
     
     # Ejecutar pasos
     check_prerequisites
+    check_ports
     
     if [[ "$1" != "--no-backup" ]]; then
         create_backup
@@ -467,6 +629,12 @@ main() {
     update_dependencies
     start_server
     verify_server
+    
+    # Configurar Nginx si no está ya configurado
+    if [[ "$1" != "--no-nginx" ]]; then
+        setup_nginx
+    fi
+    
     cleanup
     show_summary
     
