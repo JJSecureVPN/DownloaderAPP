@@ -1,6 +1,6 @@
 # 🚀 DownloaderAPP - Instalador Público
 
-[![Version](https://img.shields.io/badge/version-2.0-blue.svg)](https://github.com/JJSecureVPN/DownloaderAPP-installer)
+[![Version](https://img.shields.io/badge/version-2.0-blue.svg)](https://github.com/JJSecureVPN/DownloaderAPP)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20Ubuntu%20%7C%20Debian-lightgrey.svg)](#)
 [![Domain](https://img.shields.io/badge/domain-vps.jhservices.com.ar-orange.svg)](#)
@@ -37,18 +37,18 @@ Cuando subes un archivo que ya existe, obtienes 3 opciones:
 
 ### Método 1: Una línea (Recomendado)
 ```bash
-sudo bash <(curl -s https://raw.githubusercontent.com/JJSecureVPN/DownloaderAPP-installer/main/install.sh)
+sudo bash <(curl -s https://raw.githubusercontent.com/JJSecureVPN/DownloaderAPP/main/install.sh)
 ```
 
 ### Método 2: Descarga y ejecuta
 ```bash
-wget https://raw.githubusercontent.com/JJSecureVPN/DownloaderAPP-installer/main/install.sh
+wget https://raw.githubusercontent.com/JJSecureVPN/DownloaderAPP/main/install.sh
 sudo bash install.sh
 ```
 
 ### Método 3: Con curl
 ```bash
-curl -O https://raw.githubusercontent.com/JJSecureVPN/DownloaderAPP-installer/main/install.sh
+curl -O https://raw.githubusercontent.com/JJSecureVPN/DownloaderAPP/main/install.sh
 sudo bash install.sh
 ```
 
@@ -149,7 +149,7 @@ Para actualizar a la última versión:
 screen -S downloader -X quit
 
 # Ejecutar instalador nuevamente
-sudo bash <(curl -s https://raw.githubusercontent.com/JJSecureVPN/DownloaderAPP-installer/main/install.sh)
+sudo bash <(curl -s https://raw.githubusercontent.com/JJSecureVPN/DownloaderAPP/main/install.sh)
 ```
 
 ## 🐛 Solución de Problemas
@@ -179,7 +179,7 @@ pip3 install Flask==2.3.3 gevent==23.7.0
 
 ## 📞 Soporte
 
-- **GitHub Issues**: [Reportar problema](https://github.com/JJSecureVPN/DownloaderAPP-installer/issues)
+- **GitHub Issues**: [Reportar problema](https://github.com/JJSecureVPN/DownloaderAPP/issues)
 - **Desarrollador**: @JHServices
 - **Dominio**: vps.jhservices.com.ar
 
