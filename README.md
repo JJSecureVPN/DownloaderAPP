@@ -58,24 +58,161 @@
 
 ## 🚀 Instalación Rápida
 
-### Método 1: Descarga directa (Recomendado)
+### 🌐 Instalación en VPS (Recomendado para Producción)
+
+#### **🔧 Método 1: Instalación Completa Automática (⭐ RECOMENDADO)**
+
+Conecta a tu VPS y ejecuta:
+
+```bash
+# 1. Conectar al VPS
+ssh tu_usuario@vps.jhservices.com.ar
+
+# 2. Instalación completa en una línea
+sudo bash <(curl -s https://raw.githubusercontent.com/JJSecureVPN/DownloaderAPP/main/installer.sh)
+
+# 3. Configurar para acceso sin puerto
+cd DownloaderAPK
+./update_vps.sh
+
+# ✅ Resultado: http://vps.jhservices.com.ar (¡Sin puerto!)
+```
+
+#### **🔧 Método 2: Clonación Manual (Control Total)**
+
+```bash
+# 1. Conectar al VPS
+ssh tu_usuario@vps.jhservices.com.ar
+
+# 2. Instalar dependencias básicas
+sudo apt update && sudo apt install -y git python3 python3-pip curl wget screen nginx
+
+# 3. Clonar el repositorio
+git clone https://github.com/JJSecureVPN/DownloaderAPP.git
+cd DownloaderAPP
+
+# 4. Instalar dependencias de Python
+pip3 install -r requirements.txt
+
+# 5. Configurar permisos de scripts
+chmod +x *.sh
+
+# 6. Ejecutar configuración completa
+./update_vps.sh
+
+# ✅ Resultado: http://vps.jhservices.com.ar (¡Sin puerto!)
+```
+
+#### **🔧 Método 3: Descarga Directa del Script**
+
+```bash
+# 1. Conectar al VPS
+ssh tu_usuario@vps.jhservices.com.ar
+
+# 2. Descargar e instalar
+wget https://raw.githubusercontent.com/JJSecureVPN/DownloaderAPP/main/installer.sh
+sudo bash installer.sh
+
+# 3. Entrar al directorio y configurar
+cd DownloaderAPP
+./update_vps.sh
+
+# ✅ Resultado: http://vps.jhservices.com.ar (¡Sin puerto!)
+```
+
+#### **📋 Instrucciones Detalladas para VPS**
+
+**Paso 1: Conectar al VPS**
+```bash
+# Reemplaza con tu información de VPS
+ssh root@vps.jhservices.com.ar
+# O con usuario no-root:
+ssh tu_usuario@vps.jhservices.com.ar
+```
+
+**Paso 2: Preparar el Sistema**
+```bash
+# Actualizar paquetes del sistema
+sudo apt update && sudo apt upgrade -y
+
+# Instalar dependencias esenciales
+sudo apt install -y python3 python3-pip git curl wget screen nginx ufw
+
+# Configurar firewall básico
+sudo ufw allow ssh
+sudo ufw allow 80
+sudo ufw allow 443
+sudo ufw allow 8080
+sudo ufw --force enable
+```
+
+**Paso 3: Clonar y Configurar la Aplicación**
+```bash
+# Clonar el repositorio
+git clone https://github.com/JJSecureVPN/DownloaderAPP.git
+cd DownloaderAPP
+
+# Instalar dependencias de Python
+sudo pip3 install -r requirements.txt
+
+# Dar permisos de ejecución a todos los scripts
+chmod +x *.sh
+```
+
+**Paso 4: Configuración Automática Completa**
+```bash
+# Ejecutar script de configuración completa
+./update_vps.sh
+
+# Este script automáticamente:
+# ✅ Configura la aplicación en puerto 8080
+# ✅ Instala y configura Nginx como proxy
+# ✅ Crea backup de seguridad
+# ✅ Configura systemd service
+# ✅ Inicia todos los servicios
+```
+
+**Paso 5: Verificar la Instalación**
+```bash
+# Verificar que la aplicación está corriendo
+ps aux | grep python
+systemctl status nginx
+
+# Probar acceso local
+curl http://localhost:8080/api/apps
+curl http://localhost/api/apps
+
+# Verificar puertos
+netstat -tulpn | grep :80
+netstat -tulpn | grep :8080
+```
+
+**Paso 6: Acceso Final**
+- 🌐 **Con Nginx (Sin Puerto)**: `http://vps.jhservices.com.ar`
+- 🔗 **Directo (Con Puerto)**: `http://vps.jhservices.com.ar:8080`
+- 🏪 **Tienda**: `http://vps.jhservices.com.ar/store`
+- 💻 **Portal Desarrolladores**: `http://vps.jhservices.com.ar/upload`
+
+### 💻 Instalación Local (Desarrollo)
+
+#### **Método 1: Descarga directa (Recomendado)**
 ```bash
 wget https://raw.githubusercontent.com/JJSecureVPN/DownloaderAPP/main/installer.sh
 sudo bash installer.sh
 ```
 
-### Método 2: Con curl
+#### **Método 2: Con curl**
 ```bash
 curl -O https://raw.githubusercontent.com/JJSecureVPN/DownloaderAPP/main/installer.sh
 sudo bash installer.sh
 ```
 
-### Método 3: Una línea
+#### **Método 3: Una línea**
 ```bash
 sudo bash <(curl -s https://raw.githubusercontent.com/JJSecureVPN/DownloaderAPP/main/installer.sh)
 ```
 
-### Método 4: Clonación completa
+#### **Método 4: Clonación completa**
 ```bash
 git clone https://github.com/JJSecureVPN/DownloaderAPP.git
 cd DownloaderAPP
@@ -432,7 +569,320 @@ curl https://vps.jhservices.com.ar/api/apps         # HTTPS (si SSL está config
 
 Después de cualquier configuración de puertos, accede a:
 
-## 📊 Ejemplos de Uso
+## � Instalación Paso a Paso en VPS (Guía Completa)
+
+### 🎯 Objetivo Final
+Después de esta instalación tendrás:
+- ✅ APK Store accesible en `http://vps.jhservices.com.ar` (sin puerto)
+- ✅ Portal de desarrolladores en `http://vps.jhservices.com.ar/upload`
+- ✅ Nginx configurado como proxy reverso
+- ✅ Aplicación corriendo en puerto 8080 internamente
+- ✅ SSL/HTTPS opcional disponible
+- ✅ Systemd service para auto-inicio
+
+### 🔧 Paso 1: Preparar el VPS
+
+#### **1.1 Conectar al VPS**
+```bash
+# Conectar vía SSH (reemplaza con tu información)
+ssh root@vps.jhservices.com.ar
+# O con usuario específico:
+ssh tu_usuario@vps.jhservices.com.ar
+```
+
+#### **1.2 Actualizar Sistema**
+```bash
+# Actualizar lista de paquetes
+sudo apt update && sudo apt upgrade -y
+
+# Instalar dependencias básicas
+sudo apt install -y python3 python3-pip git curl wget screen nginx ufw htop nano
+```
+
+#### **1.3 Configurar Firewall**
+```bash
+# Configurar firewall básico
+sudo ufw allow ssh         # Puerto 22 (SSH)
+sudo ufw allow 80          # Puerto 80 (HTTP)
+sudo ufw allow 443         # Puerto 443 (HTTPS)
+sudo ufw allow 8080        # Puerto 8080 (Aplicación)
+sudo ufw --force enable
+
+# Verificar estado
+sudo ufw status
+```
+
+### 🔧 Paso 2: Descargar e Instalar la Aplicación
+
+#### **2.1 Clonar Repositorio**
+```bash
+# Ir al directorio home
+cd ~
+
+# Clonar el repositorio
+git clone https://github.com/JJSecureVPN/DownloaderAPP.git
+
+# Entrar al directorio
+cd DownloaderAPP
+
+# Verificar contenido
+ls -la
+```
+
+#### **2.2 Instalar Dependencias de Python**
+```bash
+# Instalar dependencias desde requirements.txt
+sudo pip3 install -r requirements.txt
+
+# Verificar instalación
+python3 -c "import flask; print('Flask instalado correctamente')"
+```
+
+#### **2.3 Configurar Permisos**
+```bash
+# Dar permisos de ejecución a scripts
+chmod +x *.sh
+
+# Verificar permisos
+ls -la *.sh
+```
+
+### 🔧 Paso 3: Configuración Automática Completa
+
+#### **3.1 Ejecutar Script de Configuración Principal**
+```bash
+# Ejecutar configuración completa
+./update_vps.sh
+
+# Este script automáticamente:
+# ✅ Configura la aplicación en puerto 8080
+# ✅ Instala y configura Nginx
+# ✅ Crea configuración de proxy reverso
+# ✅ Configura systemd service
+# ✅ Inicia todos los servicios
+# ✅ Crea backups de seguridad
+```
+
+#### **3.2 Verificar Instalación**
+```bash
+# Verificar que la aplicación está corriendo
+ps aux | grep python
+
+# Verificar Nginx
+sudo systemctl status nginx
+
+# Verificar puertos
+sudo netstat -tulpn | grep :80
+sudo netstat -tulpn | grep :8080
+
+# Probar acceso local
+curl http://localhost:8080/api/apps
+curl http://localhost/api/apps
+```
+
+### 🔧 Paso 4: Verificación y Pruebas
+
+#### **4.1 Probar Acceso Externo**
+```bash
+# Desde tu computadora local, probar:
+curl http://vps.jhservices.com.ar/api/apps
+
+# O abrir en navegador:
+# http://vps.jhservices.com.ar
+# http://vps.jhservices.com.ar/upload
+```
+
+#### **4.2 Verificar Logs**
+```bash
+# Ver logs de la aplicación
+tail -f server.log
+
+# Ver logs de Nginx
+sudo tail -f /var/log/nginx/access.log
+sudo tail -f /var/log/nginx/error.log
+
+# Ver logs del sistema
+sudo journalctl -u nginx -f
+```
+
+#### **4.3 Verificar Estructura de Archivos**
+```bash
+# Verificar estructura del proyecto
+tree DownloaderAPP/
+# O si no tienes tree:
+find DownloaderAPP/ -type f -name "*.py" -o -name "*.html" -o -name "*.css"
+
+# Verificar carpeta uploads (datos de usuarios)
+ls -la uploads/
+```
+
+### 🔧 Paso 5: Configuración SSL/HTTPS (Opcional)
+
+#### **5.1 Instalar Certbot**
+```bash
+# Instalar certbot para SSL gratuito
+sudo apt install certbot python3-certbot-nginx -y
+```
+
+#### **5.2 Obtener Certificado SSL**
+```bash
+# Obtener certificado para tu dominio
+sudo certbot --nginx -d vps.jhservices.com.ar
+
+# Seguir las instrucciones del wizard
+# Al final tendrás HTTPS automático
+```
+
+#### **5.3 Configurar Renovación Automática**
+```bash
+# Configurar cron para renovación automática
+sudo crontab -e
+
+# Agregar esta línea:
+0 12 * * * /usr/bin/certbot renew --quiet
+
+# Verificar renovación
+sudo certbot renew --dry-run
+```
+
+### 🔧 Paso 6: Configuración de Systemd (Auto-inicio)
+
+#### **6.1 Verificar Service**
+```bash
+# Verificar que el service está activo
+sudo systemctl status downloader-app
+
+# Si no está activo, activarlo
+sudo systemctl enable downloader-app
+sudo systemctl start downloader-app
+```
+
+#### **6.2 Comandos de Gestión del Service**
+```bash
+# Iniciar aplicación
+sudo systemctl start downloader-app
+
+# Detener aplicación
+sudo systemctl stop downloader-app
+
+# Reiniciar aplicación
+sudo systemctl restart downloader-app
+
+# Ver logs del service
+sudo journalctl -u downloader-app -f
+
+# Ver estado detallado
+sudo systemctl status downloader-app -l
+```
+
+### 🔧 Paso 7: Verificación Final
+
+#### **7.1 Lista de Verificación Completa**
+```bash
+# ✅ 1. Aplicación corriendo en puerto 8080
+curl http://localhost:8080/api/apps
+
+# ✅ 2. Nginx proxy funcionando en puerto 80
+curl http://localhost/api/apps
+
+# ✅ 3. Acceso externo sin puerto
+curl http://vps.jhservices.com.ar/api/apps
+
+# ✅ 4. HTTPS funcionando (si configuraste SSL)
+curl https://vps.jhservices.com.ar/api/apps
+
+# ✅ 5. Services activos y habilitados
+sudo systemctl is-active nginx
+sudo systemctl is-active downloader-app
+sudo systemctl is-enabled downloader-app
+```
+
+#### **7.2 URLs Finales de Acceso**
+Después de la instalación completa, tu APK Store estará disponible en:
+
+- 🏪 **Tienda Principal**: `http://vps.jhservices.com.ar/`
+- 💻 **Portal Desarrolladores**: `http://vps.jhservices.com.ar/upload`
+- 📱 **Detalle de App**: `http://vps.jhservices.com.ar/app/nombre-app.apk`
+- 🔌 **API**: `http://vps.jhservices.com.ar/api/apps`
+- 🔒 **HTTPS** (si configuraste SSL): `https://vps.jhservices.com.ar/`
+
+#### **7.3 Acceso con Puerto (Directo)**
+También puedes acceder directamente al puerto 8080:
+- `http://vps.jhservices.com.ar:8080/`
+
+### 🔧 Paso 8: Mantenimiento y Actualizaciones
+
+#### **8.1 Actualizar la Aplicación**
+```bash
+# Actualización completa (mantiene datos)
+cd DownloaderAPP
+./update_vps.sh
+
+# Actualización rápida para cambios menores
+./quick_update.sh
+```
+
+#### **8.2 Backup Manual**
+```bash
+# Crear backup de datos de usuarios
+cd DownloaderAPP
+cp -r uploads/ uploads_backup_$(date +%Y%m%d_%H%M%S)/
+
+# Listar backups
+ls -la uploads_backup_*
+```
+
+#### **8.3 Monitoreo del Sistema**
+```bash
+# Ver recursos del sistema
+htop
+
+# Ver uso de disco
+df -h
+
+# Ver logs en tiempo real
+tail -f server.log
+sudo tail -f /var/log/nginx/access.log
+```
+
+### 🚨 Comandos de Emergencia
+
+#### **Si algo sale mal durante la instalación:**
+```bash
+# Detener todos los servicios
+sudo systemctl stop nginx
+sudo systemctl stop downloader-app
+sudo screen -S downloader -X quit
+
+# Limpiar y reiniciar
+cd DownloaderAPP
+git reset --hard HEAD
+git pull origin main
+./update_vps.sh
+
+# Reiniciar servicios
+sudo systemctl restart nginx
+sudo systemctl restart downloader-app
+```
+
+#### **Reinstalación completa:**
+```bash
+# Backup de datos
+cp -r DownloaderAPP/uploads/ ~/uploads_backup/
+
+# Eliminar instalación actual
+rm -rf DownloaderAPP/
+
+# Reinstalar desde cero
+git clone https://github.com/JJSecureVPN/DownloaderAPP.git
+cd DownloaderAPP
+chmod +x *.sh
+sudo pip3 install -r requirements.txt
+./update_vps.sh
+
+# Restaurar datos
+cp -r ~/uploads_backup/* uploads/
+```
 
 ### **Subir una Aplicación:**
 1. Ve a `/upload`
@@ -631,6 +1081,109 @@ cat uploads/apps_metadata.json
 
 ##  Solución de Problemas
 
+### 🔧 Problemas en VPS (Específicos de Servidor)
+
+#### **🚨 Error: "No se puede conectar al puerto 80"**
+```bash
+# Verificar si Nginx está corriendo
+sudo systemctl status nginx
+
+# Si no está instalado, instalarlo
+sudo apt install nginx -y
+sudo systemctl start nginx
+sudo systemctl enable nginx
+
+# Verificar configuración
+sudo nginx -t
+sudo systemctl restart nginx
+```
+
+#### **🚨 Error: "Puerto 8080 ocupado"**
+```bash
+# Ver qué proceso usa el puerto
+sudo netstat -tulpn | grep :8080
+sudo lsof -i :8080
+
+# Matar proceso si es necesario
+sudo kill -9 $(sudo lsof -t -i:8080)
+
+# Reiniciar aplicación
+cd DownloaderAPP
+./update_vps.sh
+```
+
+#### **🚨 Error: "git: command not found"**
+```bash
+# Instalar git
+sudo apt update
+sudo apt install git -y
+
+# Verificar instalación
+git --version
+```
+
+#### **🚨 Error: "Permission denied"**
+```bash
+# Dar permisos correctos
+cd DownloaderAPP
+chmod +x *.sh
+sudo chown -R $USER:$USER .
+
+# Si usas root, asegurar permisos
+chmod 755 *.sh
+```
+
+#### **🚨 Error: "Nginx 404 Not Found"**
+```bash
+# Verificar configuración de Nginx
+sudo cat /etc/nginx/sites-available/apk-store
+
+# Reconfigurar Nginx automáticamente
+cd DownloaderAPP
+./setup_nginx.sh
+
+# Verificar sintaxis y reiniciar
+sudo nginx -t
+sudo systemctl restart nginx
+```
+
+#### **🚨 Error: "No module named 'flask'"**
+```bash
+# Instalar dependencias de Python
+cd DownloaderAPP
+sudo pip3 install -r requirements.txt
+
+# O instalar Flask específicamente
+sudo pip3 install Flask==2.3.3 gevent==23.7.0
+```
+
+#### **🚨 Error: "Screen not found"**
+```bash
+# Instalar screen
+sudo apt install screen -y
+
+# Verificar sesiones activas
+screen -ls
+
+# Reconectar a sesión existente
+screen -r downloader
+```
+
+#### **🚨 Error de SSL/HTTPS**
+```bash
+# Instalar certbot para SSL gratuito
+sudo apt install certbot python3-certbot-nginx -y
+
+# Obtener certificado SSL
+sudo certbot --nginx -d vps.jhservices.com.ar
+
+# Renovar certificados automáticamente
+sudo crontab -e
+# Agregar: 0 12 * * * /usr/bin/certbot renew --quiet
+```
+
+### 🔧 Problemas Generales
+
 ### Error de instalación con curl
 Si el comando `bash <(curl ...)` falla:
 ```bash
@@ -660,6 +1213,76 @@ screen -dmS downloader python3 main.py 8080
 sudo apt update
 sudo apt install python3 python3-pip git screen curl -y
 pip3 install Flask==2.3.3 gevent==23.7.0
+```
+
+### 🆘 Comandos de Diagnóstico para VPS
+
+#### **Verificación Completa del Sistema**
+```bash
+# Estado de todos los servicios
+sudo systemctl status nginx
+sudo systemctl status downloader-app
+ps aux | grep python
+
+# Estado de puertos
+sudo netstat -tulpn | grep :80
+sudo netstat -tulpn | grep :8080
+sudo netstat -tulpn | grep :443
+
+# Espacio en disco
+df -h
+du -sh DownloaderAPP/
+
+# Memoria y CPU
+free -h
+top -bn1 | head -20
+
+# Logs del sistema
+sudo journalctl -u nginx -n 50
+sudo journalctl -u downloader-app -n 50
+```
+
+#### **Logs de la Aplicación**
+```bash
+# Ver logs en tiempo real
+tail -f DownloaderAPP/server.log
+tail -f DownloaderAPP/update.log
+
+# Logs de Nginx
+sudo tail -f /var/log/nginx/access.log
+sudo tail -f /var/log/nginx/error.log
+
+# Logs del sistema
+sudo journalctl -f
+```
+
+#### **Reinicio Completo del Sistema**
+```bash
+# Reiniciar aplicación solamente
+cd DownloaderAPP
+./update_vps.sh
+
+# Reiniciar todos los servicios
+sudo systemctl restart nginx
+sudo systemctl restart downloader-app
+
+# Reinicio completo del VPS (último recurso)
+sudo reboot
+```
+
+#### **Backup y Restauración**
+```bash
+# Crear backup manual
+cd DownloaderAPP
+cp -r uploads/ uploads_backup_$(date +%Y%m%d_%H%M%S)/
+
+# Restaurar último backup
+ls -la uploads_backup_*
+cp -r uploads_backup_YYYYMMDD_HHMMSS/* uploads/
+
+# Verificar integridad de datos
+ls -la uploads/
+cat uploads/apps_metadata.json | jq .
 ```
 
 ## 📞 Soporte
