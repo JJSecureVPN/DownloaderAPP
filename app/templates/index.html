@@ -524,6 +524,25 @@
             formData.append('file', currentFile);
             formData.append('action', action);
             
+            // Agregar todos los campos de metadata
+            formData.append('app_name', document.getElementById('appName').value);
+            formData.append('developer', document.getElementById('developer').value);
+            formData.append('description', document.getElementById('description').value);
+            formData.append('category', document.getElementById('category').value);
+            formData.append('version', document.getElementById('version').value);
+            
+            // Agregar icono si existe
+            const iconFile = document.getElementById('icon').files[0];
+            if (iconFile) {
+                formData.append('icon', iconFile);
+            }
+            
+            // Agregar screenshots si existen
+            const screenshotFiles = document.getElementById('screenshots').files;
+            for (let i = 0; i < screenshotFiles.length; i++) {
+                formData.append('screenshots', screenshotFiles[i]);
+            }
+            
             try {
                 const response = await fetch('/upload', {
                     method: 'POST',
@@ -537,6 +556,9 @@
                     
                     loading.style.display = 'none';
                     result.style.display = 'block';
+                    
+                    // Mostrar información de la app subida
+                    console.log('App subida:', data.app_info);
                     
                     // Actualizar lista de archivos
                     await loadExistingFiles();

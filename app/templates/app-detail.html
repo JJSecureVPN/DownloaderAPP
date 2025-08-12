@@ -210,7 +210,7 @@
             // App icon
             const iconContainer = document.getElementById('appIcon');
             if (app.icon && app.icon !== '') {
-                iconContainer.innerHTML = `<img src="/static/uploads/icons/${app.icon}" alt="${app.name || app.filename}" />`;
+                iconContainer.innerHTML = `<img src="/uploads/icons/${app.icon}" alt="${app.name || app.filename}" />`;
             } else {
                 iconContainer.innerHTML = '📱';
                 iconContainer.className = 'app-icon emoji-icon';
@@ -254,8 +254,8 @@
             const container = document.getElementById('screenshotsContainer');
             
             container.innerHTML = screenshots.map(screenshot => `
-                <div class="screenshot-item" onclick="openScreenshot('/static/uploads/screenshots/${screenshot}')">
-                    <img src="/static/uploads/screenshots/${screenshot}" alt="Screenshot" />
+                <div class="screenshot-item" onclick="openScreenshot('/uploads/screenshots/${screenshot}')">
+                    <img src="/uploads/screenshots/${screenshot}" alt="Screenshot" />
                 </div>
             `).join('');
             

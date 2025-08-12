@@ -173,6 +173,16 @@ def upload():
     filename = secure_filename(file.filename.replace(' ', '_'))
     file_path = os.path.join(upload_folder, filename)
     
+    # Debug: mostrar datos recibidos
+    print(f'[DEBUG] Datos del formulario recibidos:')
+    print(f'  - app_name: {request.form.get("app_name")}')
+    print(f'  - developer: {request.form.get("developer")}')
+    print(f'  - description: {request.form.get("description")}')
+    print(f'  - category: {request.form.get("category")}')
+    print(f'  - version: {request.form.get("version")}')
+    print(f'  - icon: {request.files.get("icon")}')
+    print(f'  - screenshots: {len(request.files.getlist("screenshots"))} archivos')
+    
     # Verificar si el archivo ya existe
     if __file_exists(filename):
         action = request.form.get('action', 'replace')
