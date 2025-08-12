@@ -212,9 +212,126 @@
         }
         
         function copyFileUrl(url) {
-            navigator.clipboard.writeText(url).then(() => {
-                alert('¡Enlace copiado al portapapeles!');
-            });
+            // Método moderno con fallback
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(url).then(() => {
+                    showCopySuccess('¡Enlace copiado al portapapeles!');
+                }).catch(() => {
+                    fallbackCopyText(url);
+                });
+            } else {
+                fallbackCopyText(url);
+            }
+        }
+        
+        function fallbackCopyText(text) {
+            // Crear elemento temporal para copiar
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            textArea.style.top = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
+                showCopySuccess('¡Enlace copiado al portapapeles!');
+            } catch (err) {
+                console.error('Error al copiar:', err);
+                promptCopyFallback(text);
+            }
+            
+            document.body.removeChild(textArea);
+        }
+        
+        function promptCopyFallback(text) {
+            // Último recurso: mostrar el texto para copiar manualmente
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.8);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+            `;
+            
+            modal.innerHTML = `
+                <div style="
+                    background: white;
+                    padding: 20px;
+                    border-radius: 10px;
+                    max-width: 90%;
+                    text-align: center;
+                    color: black;
+                ">
+                    <h3>Copiar enlace manualmente</h3>
+                    <input type="text" value="${text}" style="
+                        width: 100%;
+                        padding: 10px;
+                        margin: 10px 0;
+                        border: 1px solid #ccc;
+                        border-radius: 5px;
+                    " onclick="this.select()" readonly>
+                    <br>
+                    <button onclick="document.body.removeChild(this.parentElement.parentElement)" style="
+                        background: #3498db;
+                        color: white;
+                        border: none;
+                        padding: 10px 20px;
+                        border-radius: 5px;
+                        cursor: pointer;
+                    ">Cerrar</button>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+        
+        function showCopySuccess(message) {
+            // Mostrar notificación de éxito
+            const notification = document.createElement('div');
+            notification.textContent = message;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #2ecc71;
+                color: white;
+                padding: 15px 20px;
+                border-radius: 10px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                z-index: 9999;
+                font-weight: bold;
+                animation: slideIn 0.3s ease;
+            `;
+            
+            // Agregar CSS de animación si no existe
+            if (!document.getElementById('copyNotificationCSS')) {
+                const style = document.createElement('style');
+                style.id = 'copyNotificationCSS';
+                style.textContent = `
+                    @keyframes slideIn {
+                        from { transform: translateX(100%); opacity: 0; }
+                        to { transform: translateX(0); opacity: 1; }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 3000);
         }
         
         form.addEventListener('submit', async (e) => {
@@ -286,15 +403,44 @@
         }
         
         function copyToClipboard() {
-            downloadUrl.select();
-            document.execCommand('copy');
+            const url = downloadUrl.value;
             
+            // Método moderno con fallback
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(url).then(() => {
+                    updateCopyButton();
+                }).catch(() => {
+                    fallbackCopyFromInput();
+                });
+            } else {
+                fallbackCopyFromInput();
+            }
+        }
+        
+        function fallbackCopyFromInput() {
+            try {
+                downloadUrl.select();
+                downloadUrl.setSelectionRange(0, 99999); // Para móviles
+                document.execCommand('copy');
+                updateCopyButton();
+            } catch (err) {
+                console.error('Error al copiar:', err);
+                promptCopyFallback(downloadUrl.value);
+            }
+        }
+        
+        function updateCopyButton() {
             const copyBtn = document.querySelector('.copyBtn');
             const originalText = copyBtn.textContent;
             copyBtn.textContent = '✅ Copiado!';
+            copyBtn.style.background = 'linear-gradient(135deg, #2ecc71, #27ae60)';
+            
             setTimeout(() => {
                 copyBtn.textContent = originalText;
+                copyBtn.style.background = 'linear-gradient(135deg, #3498db, #2980b9)';
             }, 2000);
+            
+            showCopySuccess('¡Enlace copiado al portapapeles!');
         }
         
         function uploadAnother() {
